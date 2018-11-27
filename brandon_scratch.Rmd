@@ -6,8 +6,8 @@ output: html_document
 ---
 
 
+## other
 - implement tangent (derivative-based) adaptive rejection sampler
-
 - INPUTS: sample number
 - check density
 - check log concave density
@@ -15,11 +15,42 @@ output: html_document
 - squeezing function
 - from sample number, do loop
   - etc. etc. 
+
+## load libraries
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(assertthat)
+library(numDeriv)
+```
   
+  
+  
+## initial error-checking
+- check input domain, D
+- check input k, the number of xs to derive tangent
+- check input g(x) , it's log form, log-concave, differentiable, etc.
+- check input n, the number of values to sample
+
 ## function for intersection of tangent lines for x_{j} and x_{j+1}
 ```{r}
 
-dist_a <- 
+evaluate_z  <- function(x_initial, x_next, log_concave_density) {
+        
+        assert_that(is.integer(x_initial), msg = "starting x is not a number and/or within D")
+        assert_that(is.integer(x_next), msg = "next x is not a number and/or within D")
+        
+        
+        assert_that(
+                    
+                    
+}
+        
+        
+        
+        
+example_x <- c(1,5,10,12)
+
+
 ```
  
  
