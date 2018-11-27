@@ -31,27 +31,68 @@ library(numDeriv)
 - check input g(x) , it's log form, log-concave, differentiable, etc.
 - check input n, the number of values to sample
 
-## function for intersection of tangent lines for x_{j} and x_{j+1}
+
+## TEST FUNCTION
 ```{r}
 
+lin <- function(x) {
+        return(x + 2)
+}
+```
+
+
+
+
+## FUNCTION to evaluate h(x) (log-concave form of g(x))
+```{r}
+evaluate_log_concave_x <- function(log_concave_density, x) {
+        log_concave_density(
+}
+```
+
+## FUNCTION to evaluate h'(x) (first derivative of h(x))
+```{r}
+evaluate_deriv_log_concave_x <- function(log_concave_density, x) {
+        numDeriv::grad(log_concave_density, x)
+}
+```
+
+
+## FUNCTION for intersection of tangent lines for x_{j} and x_{j+1}
+```{r}
 evaluate_z  <- function(x_initial, x_next, log_concave_density) {
         
         assert_that(is.integer(x_initial), msg = "starting x is not a number and/or within D")
         assert_that(is.integer(x_next), msg = "next x is not a number and/or within D")
+
+        
+        # log_concave_density will already be past initial error-checking
+        # assert_that ... ? 
+        
+        # EQUATION 1
+        # z_{j} = h(x_{j+1}) - h(x_j) - x_{j+1} h'(x_{j+1}) + x_j h'(x_j)
+        # ....... -----------------------------------------------------
+        # .......                h'(x_j) - h'(x_{j+1})
+        # END EQUATION 1
+
+        z_numerator <- evaluate_log_concave_x(log_concave_density, x_next) - 
+                evaluate_log_concave_x(log_concave_density, x_initial) - 
+                ( x_next * evaluate_deriv_log_concave_x(log_concave_density, x_next) ) +
+                ( x_initial * evaluate_deriv_log_concave_x(log_concave_density, x_initial) )
+        
+        z_denominator <- evaluate_deriv_log_concave_x(x_initial) - evaluate_deriv_log_concave_x(x_next)
         
         
-        assert_that(
-                    
-                    
+        return( z_numerator / z_denominator )
 }
-        
-        
-        
-        
-example_x <- c(1,5,10,12)
-
-
 ```
+
+
+## test FUNCTION evaluate_z
+```{r}
+#example_x <- c(1,5,10,12)
+```
+
  
  
 
