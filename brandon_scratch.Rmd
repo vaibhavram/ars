@@ -1,2 +1,28 @@
+---
+title: "brandon_scratch"
+author: "Brandon Mannion"
+date: "11/27/2018"
+output: html_document
+---
+
+
+- implement tangent (derivative-based) adaptive rejection sampler
+
+- INPUTS: sample number
+- check density
+- check log concave density
+- generate enveloping function
+- squeezing function
+- from sample number, do loop
+  - etc. etc. 
+  
 ## function for intersection of tangent lines for x_{j} and x_{j+1}
+```{r}
+
+dist_a <- 
+```
+ 
+ 
+
+
 
