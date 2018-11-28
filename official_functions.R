@@ -2,6 +2,36 @@
 
 ### BRANDON
 
+get_z_j  <- function(x_initial, x_next, h) {
+  
+  # XXX assert_that(is.numeric(x_initial), msg = "starting x is not a number and/or within D")
+  # XXX assert_that(is.numeric(x_next), msg = "next x is not a number and/or within D")
+  
+  # log_concave_density will already be past initial error-checking
+  # assert_that ... ? 
+  
+  # EQUATION 1
+  # z_{j} = h(x_{j+1}) - h(x_j) - x_{j+1} h'(x_{j+1}) + x_j h'(x_j)
+  # ....... -----------------------------------------------------
+  # .......                h'(x_j) - h'(x_{j+1})
+  # END EQUATION 1
+  
+  # get h(x[j]) and h'(x[j])
+  h_xj <- h(x_initial)
+  h_prime_xj <- grad(h,x_initial)
+  
+  h_xjnext <- h(x_next)
+  h_prime_xjnext <- grad(h, x_next)
+  
+  z_numerator <- h_xjnext - h_xj - ( x_next * h_prime_xjnext ) + (x_initial * h_prime_xj)
+  z_denominator <- h_prime_xj - h_prime_xjnext
+  return( z_numerator / z_denominator )
+}
+
+get_z <- function(x, h) {
+  
+}
+
 ### VAIBHAV
 
 # param j: index of the u piece to return
@@ -97,7 +127,7 @@ sample.s <- function(n, x, h, z, D) {
     a <- 0.5*u_star$slope
     b <- u_star$intercept
     c <- -(spillover*sum(u_integrals) + u_star$intercept*z1 + 0.5*u_star$slope*z1^2)
-    candidates <- c((-b+sqrt(b^2-4*a*c))/(2*a), (-b-sqrt(b^2-4*a*c))/(2*a))
+    candidates <- c((-b+sqrt(b^2-4*a*c))/(2*a), (-b-sqrt(b^2+4*a*c))/(2*a))
     sample_q <- candidates[which(candidates < z2 & candidates > z1)]
     sample <- c(sample, sample_q)
   }

@@ -104,7 +104,7 @@ sample.s <- function(n, x, h, z, D) {
     a <- 0.5*u_star$slope
     b <- u_star$intercept
     c <- -(spillover*sum(u_integrals) + u_star$intercept*z1 + 0.5*u_star$slope*z1^2)
-    candidates <- c((-b+sqrt(b^2-4*a*c))/(2*a), (-b-sqrt(b^2-4*a*c))/(2*a))
+    candidates <- c((-b+sqrt(b^2-4*a*c))/(2*a), (-b-sqrt(b^2+4*a*c))/(2*a))
     sample_q <- candidates[which(candidates < z2 & candidates > z1)]
     sample <- c(sample, sample_q)
   }
