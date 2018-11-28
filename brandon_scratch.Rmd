@@ -5,8 +5,7 @@ date: "11/27/2018"
 output: html_document
 ---
 
-
-## other
+# PSEUDO / MISC.
 - implement tangent (derivative-based) adaptive rejection sampler
 - INPUTS: sample number
 - check density
@@ -16,6 +15,14 @@ output: html_document
 - from sample number, do loop
   - etc. etc. 
 
+## initial error-checking
+- check input domain, D
+- check input k, the number of xs to derive tangent
+- check input g(x) , it's log form, log-concave, differentiable, etc.
+- check input n, the number of values to sample
+
+# CODE
+
 ## load libraries
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -23,47 +30,25 @@ library(assertthat)
 library(numDeriv)
 ```
   
-  
-  
-## initial error-checking
-- check input domain, D
-- check input k, the number of xs to derive tangent
-- check input g(x) , it's log form, log-concave, differentiable, etc.
-- check input n, the number of values to sample
-
-
-## TEST FUNCTION
+## dummy variables
 ```{r}
+# borrowed setup from vaibhav_scratch.R
+x <- -3:3
 
-lin <- function(x) {
-        return(x + 2)
+h <- function(x) {
+  return(2*x - 10*log(1 + exp(x)) - 0.5*x^2 + 50)
 }
+
+#z <- seq(-2.5, 2.5, by = 1)
+#D <- c(-5, 4)
 ```
-
-
-
-
-## FUNCTION to evaluate h(x) (log-concave form of g(x))
-```{r}
-evaluate_log_concave_x <- function(log_concave_density, x) {
-        log_concave_density(
-}
-```
-
-## FUNCTION to evaluate h'(x) (first derivative of h(x))
-```{r}
-evaluate_deriv_log_concave_x <- function(log_concave_density, x) {
-        numDeriv::grad(log_concave_density, x)
-}
-```
-
 
 ## FUNCTION for intersection of tangent lines for x_{j} and x_{j+1}
 ```{r}
-evaluate_z  <- function(x_initial, x_next, log_concave_density) {
+get_z  <- function(x_initial, x_next, h) {
         
-        assert_that(is.integer(x_initial), msg = "starting x is not a number and/or within D")
-        assert_that(is.integer(x_next), msg = "next x is not a number and/or within D")
+    # XXX assert_that(is.numeric(x_initial), msg = "starting x is not a number and/or within D")
+    # XXX assert_that(is.numeric(x_next), msg = "next x is not a number and/or within D")
 
         
         # log_concave_density will already be past initial error-checking
@@ -75,26 +60,15 @@ evaluate_z  <- function(x_initial, x_next, log_concave_density) {
         # .......                h'(x_j) - h'(x_{j+1})
         # END EQUATION 1
 
-        z_numerator <- evaluate_log_concave_x(log_concave_density, x_next) - 
-                evaluate_log_concave_x(log_concave_density, x_initial) - 
-                ( x_next * evaluate_deriv_log_concave_x(log_concave_density, x_next) ) +
-                ( x_initial * evaluate_deriv_log_concave_x(log_concave_density, x_initial) )
+         # get h(x[j]) and h'(x[j])
+        h_xj <- h(x_initial)
+        h_prime_xj <- grad(h,x_initial)
         
-        z_denominator <- evaluate_deriv_log_concave_x(x_initial) - evaluate_deriv_log_concave_x(x_next)
-        
-        
+        h_xjnext <- h(x_next)
+        h_prime_xjnext <- grad(h, x_next)
+  
+        z_numerator <- h_xjnext - h_xj - ( x_next * h_prime_xjnext ) + (x_initial * h_prime_xj)
+        z_denominator <- h_prime_xj - h_prime_xjnext
         return( z_numerator / z_denominator )
 }
 ```
-
-
-## test FUNCTION evaluate_z
-```{r}
-#example_x <- c(1,5,10,12)
-```
-
- 
- 
-
-
-
