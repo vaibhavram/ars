@@ -79,6 +79,9 @@ get_z_all  <- function(x, h, D) {
 
         length_of_value_set <- length(x)
         
+        ## TODO error-checking if x within D
+        ## TODO assertions regarding x and D 
+        
         store_all_z <- c()
         
         for (i in seq(1,length_of_value_set,2)) {
