@@ -72,3 +72,22 @@ get_z  <- function(x_initial, x_next, h) {
         return( z_numerator / z_denominator )
 }
 ```
+
+## FUNCTION for getting z for all x's in domain D
+```{r}
+get_z_all  <- function(x, h, D) {
+
+        length_of_value_set <- length(x)
+        
+        store_all_z <- c()
+        
+        for (i in seq(1,length_of_value_set,2)) {
+                x_a <- x[i]
+                x_b <- x[i+1]
+        
+                store_all_z <- c(store_all_z, get_z(x_a, x_b, h)
+        }
+        
+        return(store_all_z)
+}
+```
