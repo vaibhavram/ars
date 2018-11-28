@@ -22,7 +22,7 @@ get_u_j <- function(j, x, z, h, D) {
   u <- function(t) {
     if (j == 0) {
       xj <- D[1]
-    } else if (j == len(x)) {
+    } else if (j == length(x)) {
       xj <- D[2]
     } else {
       xj <- x[j]
