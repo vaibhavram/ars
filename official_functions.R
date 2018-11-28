@@ -28,10 +28,6 @@ get_z_j  <- function(x_initial, x_next, h) {
   return( z_numerator / z_denominator )
 }
 
-get_z <- function(x, h) {
-  
-}
-
 ### VAIBHAV
 
 # param j: index of the u piece to return
