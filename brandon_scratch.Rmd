@@ -88,7 +88,7 @@ get_z_all  <- function(x, h, D) {
                 x_a <- x[i]
                 x_b <- x[i+1]
         
-                store_all_z <- c(store_all_z, get_z(x_a, x_b, h)
+                store_all_z <- c(store_all_z, get_z(x_a, x_b, h))
         }
         
         return(store_all_z)
