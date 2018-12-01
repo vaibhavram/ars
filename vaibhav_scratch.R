@@ -1,15 +1,40 @@
 library(numDeriv)
 library(assertthat)
 
+#### FROM BRANDON - CHANGE IF HE CHANGES
+
+get_z  <- function(x_initial, x_next, h) {
+  h_xj <- h(x_initial)
+  h_prime_xj <- grad(h,x_initial)
+  
+  h_xjnext <- h(x_next)
+  h_prime_xjnext <- grad(h, x_next)
+  
+  z_numerator <- h_xjnext - h_xj - ( x_next * h_prime_xjnext ) + (x_initial * h_prime_xj)
+  z_denominator <- h_prime_xj - h_prime_xjnext
+  return( z_numerator / z_denominator )
+}
+
+get_z_all  <- function(x, h, D) {
+  k <- length(x)
+  store_all_z <- c()
+  for (i in 1:(k-1)) {
+    store_all_z <- c(store_all_z, get_z(x[i], x[i+1], h))
+  }
+  return(store_all_z)
+}
+
 #### setting up
-x <- -3:3
-z <- seq(-2.5, 2.5, by = 1)
+set.seed(736)
+x <- sort(runif(15, -10,10))
 
 h <- function(x) {
   return(2*x - 10*log(1 + exp(x)) - 0.5*x^2)
 }
 
-D <- c(-5, 4)
+D <- c(-Inf, Inf)
+
+z <- get_z_all(x, h, D)
 
 # param j: index of the u piece to return
 # param x: vector of k points
@@ -98,7 +123,7 @@ sample.s <- function(n, x, h, z, D) {
   # and append to sample vector
   a <- u_star$intercept
   b <- u_star$slope
-  x_star <- 1 / b *(log(b * spillover + exp(a + b * z1)) - a)
+  x_star <- (log(b * spillover + exp(a + b * z1)) - a) / b
   
   return(x_star)
 }
