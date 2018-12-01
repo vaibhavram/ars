@@ -6,7 +6,7 @@ x <- -3:3
 z <- seq(-2.5, 2.5, by = 1)
 
 h <- function(x) {
-  return(2*x - 10*log(1 + exp(x)) - 0.5*x^2 + 50)
+  return(2*x - 10*log(1 + exp(x)) - 0.5*x^2)
 }
 
 D <- c(-5, 4)
@@ -26,6 +26,7 @@ get_u_segment <- function(j, x, h) {
   # calculate and return slope and intercept of u_segment
   intercept <- h_xj - x[j]*h_prime_xj
   slope <- h_prime_xj
+  
   return(list(intercept = intercept, slope = slope))
 }
 
@@ -43,17 +44,18 @@ get_u <- function(x, h) {
 # param full_z: vector of intersection points of the tangent lines to x,
 #   including domain endpoints
 # return: vector of numbers, with jth element representing
-#   the integral of the tangent line of x[j] from z[j-1] to z[j]
-#   where z[0] = D[1] and z[k] = D[2]
-get_u_integral <- function(u, x, h, full_z) {
+#   the integral of the exponential of the tangent line of x[j] 
+#   from z[j-1] to z[j] where z[0] = D[1] and z[k] = D[2]
+get_s_integral <- function(u, x, h, full_z) {
   # helper function to calculate the integral of the jth
   # element of u within the proper domain
   get_integral <- function(j) {
-    fun <- function(t) {u[[j]]$intercept + u[[j]]$slope*t}
-    return ((fun(full_z[j]) + fun(full_z[j+1]))/2)*(x[j+1] - x[j])
+    uj <- function(t) {u[[j]]$intercept + u[[j]]$slope*t}
+    fun <- function(t) {exp(uj(t))}
+    return(integrate(fun, full_z[j], full_z[j+1])$value)
   }
   
-  # apply and return integrals
+  # apply and return piecewise integrals of s
   integrals <- sapply(1:length(u), get_integral)
   return(integrals)
 }
@@ -72,40 +74,33 @@ sample.s <- function(n, x, h, z, D) {
   # get list of tangent lines
   u <- get_u(x, h)
   
-  # get integrals under each segment of u and correspondingly of s
-  u_integrals <- get_u_integral(u, x, h, full_z)
-  s_integrals <- u_integrals/sum(u_integrals)
+  # get integrals under each segment of s and correspondingly of s
+  s_integrals <- get_s_integral(u, x, h, full_z)
+  s_integrals_norm <- s_integrals/sum(s_integrals)
   
   # create the CDF of s
-  cumsum_s <- c(0, cumsum(s_integrals))
+  cumsum_s <- c(0, cumsum(s_integrals_norm))
   
   # draw from random uniform
-  q_vec <- runif(n)
+  q <- runif(1) # change to n
   
-  # initialize empty vector of samples
-  sample <- c()
+  # find which u-segment q is in the domain for and
+  # calculate how far into the CDF for that segment it is
+  j <- max(which(q > cumsum_s))
+  spillover <- q - cumsum_s[j]
+  u_star <- u[[j]]
   
-  for (q in q_vec) {
-    # find which u-segment q is in the domain for and
-    # calculate how far into the CDF for that segment it is
-    j <- max(which(q > cumsum_s))
-    spillover <- q - cumsum_s[j]
-    u_star <- u[[j]]
-    
-    # get bordering z-values for the appropriate u-segment
-    z1 <- full_z[j]
-    z2 <- full_z[j+1]
-    
-    # solve for the x* values that have the appropriate inverse CDF
-    # and append to sample vector
-    a <- 0.5*u_star$slope
-    b <- u_star$intercept
-    c <- -(spillover*sum(u_integrals) + u_star$intercept*z1 + 0.5*u_star$slope*z1^2)
-    candidates <- c((-b+sqrt(b^2-4*a*c))/(2*a), (-b-sqrt(b^2+4*a*c))/(2*a))
-    sample_q <- candidates[which(candidates < z2 & candidates > z1)]
-    sample <- c(sample, sample_q)
-  }
-  return(sample)
+  # get bordering z-values for the appropriate u-segment
+  z1 <- full_z[j]
+  z2 <- full_z[j+1]
+  
+  # solve for the x* values that have the appropriate inverse CDF
+  # and append to sample vector
+  a <- u_star$intercept
+  b <- u_star$slope
+  x_star <- 1 / b *(log(b * spillover + exp(a + b * z1)) - a)
+  
+  return(x_star)
 }
 
 
