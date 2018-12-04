@@ -1,5 +1,6 @@
 library(numDeriv)
 library(assertthat)
+library(testthat)
 
 #### FROM BRANDON - CHANGE IF HE CHANGES
 
@@ -26,10 +27,10 @@ get_z_all  <- function(x, h, D) {
 
 #### setting up
 set.seed(736)
-x <- sort(runif(15, -10,10))
+x <- sort(runif(50, -10,10))
 
 h <- function(x) {
-  return(2*x - 10*log(1 + exp(x)) - 0.5*x^2)
+  return(log(dnorm(x)))
 }
 
 D <- c(-Inf, Inf)
@@ -92,6 +93,18 @@ get_s_integral <- function(u, x, h, full_z) {
 # param D: domain of density function
 # return: vector of n numbers
 sample.s <- function(n, x, h, z, D) {
+  # check to make sure h is concave
+  assert_that(is.concave(h)) # requires function that brandon will write
+  
+  # make sure we are sampling at least 1 point
+  assert_that(n > 0)
+  
+  # make sure z and x correspond in dimension
+  assert_that(length(z) + 1 == length(x))
+  
+  # make sure D is properly formatted
+  assert_that(length(D) == 2)
+  
   # combine domain endpoints with the z tangent line
   # intersection points
   full_z <- c(D[1], z, D[2])
@@ -99,9 +112,15 @@ sample.s <- function(n, x, h, z, D) {
   # get list of tangent lines
   u <- get_u(x, h)
   
-  # get integrals under each segment of s and correspondingly of s
+  # get integrals under each segment of s
   s_integrals <- get_s_integral(u, x, h, full_z)
-  s_integrals_norm <- s_integrals/sum(s_integrals)
+  denom <- sum(s_integrals)
+  # make sure the total integral under s is more than the 
+  # integral under g (since s is an upper bound)
+  test_int <- integrate(function(t) exp(h(t)), D[1], D[2])
+  assert_that(denom > test_int$value - test_int$abs.error)
+  # get normaized integrals under s
+  s_integrals_norm <- s_integrals/denom
   
   # create the CDF of s
   cumsum_s <- c(0, cumsum(s_integrals_norm))
@@ -124,6 +143,9 @@ sample.s <- function(n, x, h, z, D) {
   a <- u_star$intercept
   b <- u_star$slope
   x_star <- (log(b * spillover + exp(a + b * z1)) - a) / b
+  
+  # make sure x* is between z1 and z2
+  assert_that(x_star >= z1, x_star <= z2)
   
   return(x_star)
 }
