@@ -32,8 +32,7 @@ library(numDeriv)
   
 ## dummy variables
 ```{r}
-# borrowed setup from vaibhav_scratch.R
-x <- -3:3
+x <- seq(-10, 10, by=0.01)
 
 # log-concave example
 h <- function(x) {
@@ -96,11 +95,6 @@ get_z_all <- function(x, h, D) {
 ## FUNCTION 
 ## ... check log concavity of function
 ```{r}
-# u(x_delta) > h(x_delta) ? 
-# l(x_delta) < h(x_delta) ? 
-
-# get_u_segment
-# get_l_segment
 check_log_concave <- function(j,x,h) {
         
         get_u_integral <- function() {
@@ -119,8 +113,8 @@ check_log_concave <- function(j,x,h) {
         h_integral <- get_h_integral()
         
         cat("u_integral: ", u_integral, "\nh_integral: ", h_integral, "\n")
-        ifelse(u_integral > h_integral, "upper bound segment > h(x)" , "ERROR upper bound segment < h(x)")
-        
+        cat(ifelse(u_integral > h_integral, "upper bound segment > h(x)\n" , "ERROR upper bound segment < h(x)\n"))
+        cat("\n\n")
         get_l_integral <- function() {
                 lj <- function(t) {
                         tmp_l <- get_l_segment(j,x,h)
@@ -131,8 +125,9 @@ check_log_concave <- function(j,x,h) {
                 return(integrate(fun, x[j], x[j+1])$value)
         }
         l_integral <- get_l_integral()
-       
-       ifelse(l_integral < h_integral, "lower bound segment < h(x)" , "ERROR lower bound segment > h(x)")
+        
+       cat("l_integral: ", l_integral, "\nh_integral: ", h_integral, "\n")
+       cat(ifelse(l_integral < h_integral, "lower bound segment < h(x)\n" , "ERROR lower bound segment > h(x)\n"))
         
         # #################################################
         # integrate u(x) over x_initial and x_next -> I_u(x)
@@ -141,5 +136,9 @@ check_log_concave <- function(j,x,h) {
         # check if I_u(x) > I_h(x)
         # check if I_l(x) < I_h(x)
         # ##################################################
+        # u(x_delta) > h(x_delta) ? 
+        # l(x_delta) < h(x_delta) ? 
+        # get_u_segment
+        # get_l_segment
 }
 ```
