@@ -289,7 +289,7 @@ D <- c(-Inf, Inf)
 # u <- get_u(x, h)
 # l <- get_l(x, h)
 # x_star <- sample.s(x, h, z, D)
-# is_reject(x_star, l, u)
+
 
 
 ars <- function(n, fun, D){
