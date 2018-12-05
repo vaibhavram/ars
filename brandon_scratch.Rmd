@@ -76,19 +76,50 @@ get_z_all <- function(x, h, D) {
 
 ## FUNCTION 
 ## ... check log concavity of function
-```{r eval=FALSE}
+```{r}
 # u(x_delta) > h(x_delta) ? 
 # l(x_delta) < h(x_delta) ? 
 
 # get_u_segment
 # get_l_segment
-check_log_concave <- function(x,u,l,h) {
-        get x_initial
-        get x_next
-        integrate u(x) over x_initial and x_next -> I_u(x)
-        integrate h(x) over x_initial and x_next -> I_h(x)
-        integrate l(x) over x_initial and x_next -> I_l(x)
-        check if I_u(x) > I_h(x)
-        check if I_l(x) < I_h(x)
+check_log_concave <- function(j,x,h) {
+        
+        get_u_integral <- function() {
+                uj <- function(t) {
+                    tmp_u <- get_u_segment(j,x,h)
+                    return(tmp_u$intercept + tmp_u$slope*t)
+                }
+                fun <- function(t) { exp(uj(t)) }
+                return(integrate(fun, x[j], x[j+1])$value)
+        }
+        u_integral <- get_u_integral()
+        
+        get_h_integral <- function() {
+                return(integrate(h, x[j], x[j+1])$value)
+        }
+        h_integral <- get_h_integral()
+        
+        ifelse(u_integral > h_integral, "upper bound segment > h(x)" , "ERROR upper bound segment < h(x)")
+        
+        get_l_integral <- function() {
+                lj <- function(t) {
+                        tmp_l <- get_l_segment(j,x,h)
+                        return(tmp_l$intercept + tmp_l$slope*t)
+                }
+                
+                fun <- function(t) { exp(lj(t)) }
+                return(integrate(fun, x[j], x[j+1])$value)
+        }
+        l_integral <- get_l_integral()
+       
+       ifelse(l_integral < h_integral, "lower bound segment < h(x)" , "ERROR lower bound segment > h(x)")
+        
+        # #################################################
+        # integrate u(x) over x_initial and x_next -> I_u(x)
+        # integrate h(x) over x_initial and x_next -> I_h(x)
+        # integrate l(x) over x_initial and x_next -> I_l(x)
+        # check if I_u(x) > I_h(x)
+        # check if I_l(x) < I_h(x)
+        # ##################################################
 }
 ```
