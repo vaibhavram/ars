@@ -35,8 +35,19 @@ library(numDeriv)
 # borrowed setup from vaibhav_scratch.R
 x <- -3:3
 
+# log-concave example
 h <- function(x) {
   return(2*x - 10*log(1 + exp(x)) - 0.5*x^2 + 50)
+}
+
+# log-concave example
+h <- function(x) {
+        return(log(dnorm(x))) 
+}
+
+# NOT log-concave
+h <- function(x) {
+        return(exp(x))    
 }
 ```
 
@@ -62,7 +73,15 @@ get_z <- function(j, x, h) {
   
         z_numerator <- h_xjnext - h_xj - ( x[j+1] * h_prime_xjnext ) + (x[j] * h_prime_xj)
         z_denominator <- h_prime_xj - h_prime_xjnext
-        return(list( z_numerator / z_denominator ))
+        
+        z_result <- z_numerator / z_denominator 
+        
+        ## ASSERTION 
+        ## .. check that obtained z intersection is within x
+        assert_that(z_result > x[1] && z_result < x[length(x)], msg = "z intersection is outside of X")
+       
+        return(z_result) 
+        #return(list( z_numerator / z_denominator ))
 }
 ```
 
@@ -99,6 +118,7 @@ check_log_concave <- function(j,x,h) {
         }
         h_integral <- get_h_integral()
         
+        cat("u_integral: ", u_integral, "\nh_integral: ", h_integral, "\n")
         ifelse(u_integral > h_integral, "upper bound segment > h(x)" , "ERROR upper bound segment < h(x)")
         
         get_l_integral <- function() {
