@@ -158,22 +158,8 @@ get_s_integral <- function(u, x, h, full_z) {
 # param h: log of density function
 # param z: vector of intersection points of the tangent lines to x
 # param D: domain of density function
-# param i: index of sample
 # return: vector of n numbers
-sample.s <- function(x, h, full_z, D, i) {
-  # print(paste0("Z: "))
-  # print(z)
-  # check to make sure h is concave
-  #assert_that(is.concave(h)) # requires function that brandon will write
-  
-  # make sure we are sampling at least 1 point
-  #assert_that(n > 0)
-  
-  # make sure z and x correspond in dimension
-  assert_that(length(z) + 1 == length(x))
-  
-  # make sure D is properly formatted
-  assert_that(length(D) == 2)
+sample.s <- function(n, x, h, full_z) {
   
   # get list of tangent lines
   u <- get_u(x, h)
@@ -182,13 +168,13 @@ sample.s <- function(x, h, full_z, D, i) {
   s_integrals <- get_s_integral(u, x, h, full_z)
   denom <- sum(s_integrals)
   
-  if (i %% 10 == 0) {
-    # make sure the total integral under s is more than the 
-    # integral under g (since s is an upper bound)
-    test_int <- integrate(function(t) exp(h(t)), D[1], D[2])
-    assert_that(denom > test_int$value - test_int$abs.error)
-    #assert_that(denom > test_int$value)    
-  }
+  # if (i %% 10 == 0) {
+  #   # make sure the total integral under s is more than the 
+  #   # integral under g (since s is an upper bound)
+  #   test_int <- integrate(function(t) exp(h(t)), D[1], D[2])
+  #   assert_that(denom > test_int$value - test_int$abs.error)
+  #   #assert_that(denom > test_int$value)    
+  # }
 
   # get normalized integrals under s
   s_integrals_norm <- s_integrals/denom
@@ -197,45 +183,41 @@ sample.s <- function(x, h, full_z, D, i) {
   cumsum_s <- c(0, cumsum(s_integrals_norm))
   
   # draw from random uniform
-  q <- runif(1) # change to n
+  qs <- runif(n) # change to n
+  x_stars <- c()
   
-  # find which u-segment q is in the domain for and
-  # calculate how far into the CDF for that segment it is
-  j <- max(which(q > cumsum_s))
-  spillover <- q - cumsum_s[j]
-  u_star <- u[[j]]
-  
-  # get bordering z-values for the appropriate u-segment
-  z1 <- full_z[j]
-  z2 <- full_z[j+1]
-  
-  # print(paste0("j: ", j))
-  # print(full_z)
-  
-  # solve for the x* values that have the appropriate inverse CDF
-  # and append to sample vector
-  a <- u_star$intercept
-  b <- u_star$slope
-  if(b != 0){
-    x_star <- (log(b * spillover + exp(a + b * z1)) - a) / b
+  for (q in qs) {
+    # find which u-segment q is in the domain for and
+    # calculate how far into the CDF for that segment it is
+    j <- max(which(q > cumsum_s))
+    spillover <- q - cumsum_s[j]
+    u_star <- u[[j]]
+    
+    # get bordering z-values for the appropriate u-segment
+    z1 <- full_z[j]
+    z2 <- full_z[j+1]
+    
+    # print(paste0("j: ", j))
+    # print(full_z)
+    
+    # solve for the x* values that have the appropriate inverse CDF
+    # and append to sample vector
+    a <- u_star$intercept
+    b <- u_star$slope
+    if(b != 0){
+      x_star <- (log(b * spillover + exp(a + b * z1)) - a) / b
+    }
+    else{
+      x_star <- spillover/exp(a) + z1
+    }
+    
+    # make sure x* is between z1 and z2
+    assert_that(x_star >= z1, x_star <= z2)
+    
+    x_stars <- c(x_stars, x_star)
   }
-  else{
-    x_star <- spillover/exp(a) + z1
-  }
   
-  # print(paste0("a: ", a))
-  # print(paste0("b: ", b))
-  # print(paste0("z1: ", z1))
-  # print(paste0("z2: ", z2))
-  # print(paste0("spillover: ", spillover))
-  # 
-  # 
-  #print(paste0("x*: ", x_star))
-  
-  # make sure x* is between z1 and z2
-  assert_that(x_star >= z1, x_star <= z2)
-  
-  return(x_star)
+  return(x_stars)
 }
 
 # # param l: list of tangent lines to points in x
@@ -292,18 +274,27 @@ D <- c(-Inf, Inf)
 
 
 
-ars <- function(n, fun, D){
+ars <- function(n, fun, D, batch.size = 100){
   sample = c()
   h <- function(x) {
     return(log(fun(x)))
   }
-  x <- get_start_points(f, D)
+  x <- get_start_points(fun, D)
+  print(x)
+  # make sure we are sampling at least 1 point
+  assert_that(n > 0)
+  
+  # make sure D is properly formatted
+  assert_that(length(D) == 2)
   
   while(length(sample) < n){
-    print("X:")
-    print(x)
+    # print("X:")
+    # print(x)
     
     z <- get_z_all(x, h, D)
+    
+    # make sure z and x correspond in dimension
+    assert_that(length(z) + 1 == length(x))
     
     # combine domain endpoints with the z tangent line
     # intersection points
@@ -311,36 +302,59 @@ ars <- function(n, fun, D){
     
     u <- get_u(x, h)
     l <- get_l(x, h)
-    x_star <- sample.s(x, h, full_z, D)
-    # print(z)
-    #print(paste0("x_star: ", x_star))
-    
-    # sampling step
-    w <- runif(1)
-    #print(paste0('w is',w))
-    #print(paste0('z is',z))
-    j <- min(which(x_star < full_z))
-    u_k <- u[[j-1]]$intercept + u[[j-1]]$slope * x_star
-    #print(paste0('U-k is',u_k))
-    if (x_star > x[length(x)] || x_star < x[1]){
-      l_k = -Inf
-    }
-    else{
-      i <- min(which(x_star < x))-1
-      l_k <- l[[i]]$intercept + l[[i]]$slope * x_star
-    }
-    #print(paste0('L-k is',l_k))
-    
-    if(w <= exp(l_k - u_k)){
-      sample = c(sample, x_star)
-    }
-    else{
-      # Updating step
-      x <- sort(c(x, x_star))
-      if(w <= exp(h(x_star) - u_k)){
-        sample = c(sample, x_star)
+    x_stars <- sample.s(batch.size, x, h, full_z)
+    ws <- runif(batch.size)
+    js <- sapply(x_stars, function(x_star) min(which(x_star < full_z)))
+    uks_xstar <- sapply(1:batch.size, function(i) u[[js[i]-1]]$intercept + u[[js[i]-1]]$slope * x_stars[i])
+    lks_xstar <- sapply(1:batch.size, function(index) {
+      if (x_stars[index] > x[length(x)] || x_stars[index] < x[1]) {
+        return(-Inf)
+      } else {
+        i <- min(which(x_stars[index] < x))-1
+        return(l[[i]]$intercept + l[[i]]$slope * x_stars[index])
       }
-    }
+    })
+    check1 <- ws <= exp(lks_xstar - uks_xstar)
+    check2 <- ws <= exp(h(x_stars) - uks_xstar)
+    sample <- c(sample, x_stars[check1 || check2])
+    x <- c(x, x_stars[!(check1)])
+    # lks <- sapply(x_stars, function(x_stars, x) {
+    #   if (x_star > x[length(x)] || x_star < x[1]){
+    #     l_k = -Inf
+    #   }
+    #   else{
+    #     i <- min(which(x_star < x))-1
+    #     l_k <- l[[i]]$intercept + l[[i]]$slope * x_star
+    #   }
+    # }, x)
+    # for (x_star in x_stars) {
+    #   # sampling step
+    #   w <- runif(1)
+    #   #print(paste0('w is',w))
+    #   #print(paste0('z is',z))
+    #   j <- min(which(x_star < full_z))
+    #   u_k <- u[[j-1]]$intercept + u[[j-1]]$slope * x_star
+    #   #print(paste0('U-k is',u_k))
+    #   if (x_star > x[length(x)] || x_star < x[1]){
+    #     l_k = -Inf
+    #   }
+    #   else{
+    #     i <- min(which(x_star < x))-1
+    #     l_k <- l[[i]]$intercept + l[[i]]$slope * x_star
+    #   }
+    #   #print(paste0('L-k is',l_k))
+    #   
+    #   if(w <= exp(l_k - u_k)){
+    #     sample = c(sample, x_star)
+    #   }
+    #   else{
+    #     # Updating step
+    #     x <- sort(c(x, x_star))
+    #     if(w <= exp(h(x_star) - u_k)){
+    #       sample = c(sample, x_star)
+    #     }
+    #   }
+    # }
   }
   return(sample)
 }
