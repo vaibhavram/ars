@@ -11,7 +11,7 @@ get_start_points <- function(fun, D, n=3){
   
   # check if the lower bound is finite
   if (is.finite(D[1])){
-    min = D[1]
+    min = D[1] + 0.001
   }
   else{
     x = -10
@@ -30,7 +30,7 @@ get_start_points <- function(fun, D, n=3){
   
   # check if the upper bound is finite  
   if (is.finite(D[2])){
-    max = D[2]
+    max = D[2] - 0.001
   }
   else {
     x = 10
@@ -309,12 +309,11 @@ ars <- function(n, fun, D){
   h <- function(x) {
     return(log(fun(x)))
   }
-  #x <- get_start_points(f, D)
-  x <- c(0.1,0.5,0.9)
+  x <- get_start_points(f, D)
   
   while(length(sample) < n){
-    #print("X:")
-    # print(x)
+    print("X:")
+    print(x)
     
     z <- get_z_all(x, h, D)
     
