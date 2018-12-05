@@ -60,14 +60,6 @@ get_start_points <- function(fun, D, n=3){
 
 
 get_z <- function(j, x, h) {
-  
-  # EQUATION 1
-  # z_{j} = h(x_{j+1}) - h(x_j) - x_{j+1} h'(x_{j+1}) + x_j h'(x_j)
-  # ....... -----------------------------------------------------
-  # .......                h'(x_j) - h'(x_{j+1})
-  # END EQUATION 1
-  # get h(x[j]) and h'(x[j])
-  
   h_xj <- h(x[j])
   h_prime_xj <- grad(h,x[j],method='simple')
   
@@ -76,11 +68,11 @@ get_z <- function(j, x, h) {
   
   z_numerator <- h_xjnext - h_xj - ( x[j+1] * h_prime_xjnext ) + (x[j] * h_prime_xj)
   z_denominator <- h_prime_xj - h_prime_xjnext
-  return(list( z_numerator / z_denominator ))
+  return(z_numerator / z_denominator)
 }
 
 get_z_all <- function(x, h, D) {
-  return(unlist(lapply(1:(length(x) - 1), get_z, x, h)))
+  return(sapply(1:(length(x) - 1), get_z, x, h))
 }
 
 
@@ -97,10 +89,7 @@ get_u_segment <- function(j, x, h) {
   h_prime_xj <- grad(h, x[j])
   
   # calculate and return slope and intercept of u_segment
-  intercept <- h_xj - x[j]*h_prime_xj
-  slope <- h_prime_xj
-  
-  return(list(intercept = intercept, slope = slope))
+  return(list(intercept = h_xj - x[j]*h_prime_xj, slope = h_prime_xj))
 }
 
 # param x: vector of k points at which to find tangent lines
@@ -128,10 +117,8 @@ get_l_segment <- function(j, x, h) {
   int_num <- x[j+1]*h(x[j]) - x[j]*h(x[j+1])
   slope_num <- h(x[j+1]) - h(x[j])
   
-  # solving for slope and intercept
-  intercept <- int_num / denom
-  slope <- slope_num / denom
-  return(list(intercept = intercept, slope = slope))
+  # calculate and return slope and intercept
+  return(list(intercept = int_num / denom, slope = slope_num / denom))
 }
 
 # param x: vector of k points
@@ -171,8 +158,9 @@ get_s_integral <- function(u, x, h, full_z) {
 # param h: log of density function
 # param z: vector of intersection points of the tangent lines to x
 # param D: domain of density function
+# param i: index of sample
 # return: vector of n numbers
-sample.s <- function(x, h, z, D) {
+sample.s <- function(x, h, full_z, D, i) {
   # print(paste0("Z: "))
   # print(z)
   # check to make sure h is concave
@@ -187,22 +175,22 @@ sample.s <- function(x, h, z, D) {
   # make sure D is properly formatted
   assert_that(length(D) == 2)
   
-  # combine domain endpoints with the z tangent line
-  # intersection points
-  full_z <- c(D[1], z, D[2])
-  
   # get list of tangent lines
   u <- get_u(x, h)
   
   # get integrals under each segment of s
   s_integrals <- get_s_integral(u, x, h, full_z)
   denom <- sum(s_integrals)
-  # make sure the total integral under s is more than the 
-  # integral under g (since s is an upper bound)
-  test_int <- integrate(function(t) exp(h(t)), D[1], D[2])
-  #assert_that(denom > test_int$value - test_int$abs.error)
-  #assert_that(denom > test_int$value)
-  # get normaized integrals under s
+  
+  if (i %% 10 == 0) {
+    # make sure the total integral under s is more than the 
+    # integral under g (since s is an upper bound)
+    test_int <- integrate(function(t) exp(h(t)), D[1], D[2])
+    assert_that(denom > test_int$value - test_int$abs.error)
+    #assert_that(denom > test_int$value)    
+  }
+
+  # get normalized integrals under s
   s_integrals_norm <- s_integrals/denom
   
   # create the CDF of s
@@ -324,7 +312,7 @@ ars <- function(n, fun, D){
     
     u <- get_u(x, h)
     l <- get_l(x, h)
-    x_star <- sample.s(x, h, z, D)
+    x_star <- sample.s(x, h, full_z, D)
     # print(z)
     #print(paste0("x_star: ", x_star))
     
