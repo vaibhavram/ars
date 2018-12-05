@@ -86,18 +86,14 @@ get_s_integral <- function(u, x, h, full_z) {
   return(integrals)
 }
 
-# param n: number of points to sample
 # param x: vector of k points at which to find tangent lines
 # param h: log of density function
 # param z: vector of intersection points of the tangent lines to x
 # param D: domain of density function
-# return: vector of n numbers
-sample.s <- function(n, x, h, z, D) {
+# return: a single number
+sample.s <- function(x, h, z, D) {
   # check to make sure h is concave
   assert_that(is.concave(h)) # requires function that brandon will write
-  
-  # make sure we are sampling at least 1 point
-  assert_that(n > 0)
   
   # make sure z and x correspond in dimension
   assert_that(length(z) + 1 == length(x))
