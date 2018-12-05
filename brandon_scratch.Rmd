@@ -136,3 +136,14 @@ check_log_concave <- function(j,x,h) {
        assert_that(u_integral > h_integral , msg = "upper bound segment is not greater than INPUT density")
 }
 ```
+
+## Get subset of x and check log-concavity
+```{r}
+subset_check_log_concave <- function(x_window_size, x, h) {
+        
+        ## start with window size
+        ## choose contiguous regions within X
+        ## run check_log_concave FUNCTION on this subset
+        ## ... get results on whether satisfies our log concavity conditions 
+}
+```
