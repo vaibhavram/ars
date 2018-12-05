@@ -11,7 +11,7 @@ get_start_points <- function(fun, D, n=3){
   
   # check if the lower bound is finite
   if (is.finite(D[1])){
-    min = D[1]
+    min = D[1] + 0.001
   }
   else{
     x = -10
@@ -30,7 +30,7 @@ get_start_points <- function(fun, D, n=3){
   
   # check if the upper bound is finite  
   if (is.finite(D[2])){
-    max = D[2]
+    max = D[2] - 0.001
   }
   else {
     x = 10
@@ -58,27 +58,8 @@ get_start_points <- function(fun, D, n=3){
 
 #### FROM BRANDON - CHANGE IF HE CHANGES
 
-# get_z  <- function(x_initial, x_next, h) {
-#   h_xj <- h(x_initial)
-#   h_prime_xj <- grad(h,x_initial)
-#   
-#   h_xjnext <- h(x_next)
-#   h_prime_xjnext <- grad(h, x_next)
-#   
-#   z_numerator <- h_xjnext - h_xj - ( x_next * h_prime_xjnext ) + (x_initial * h_prime_xj)
-#   z_denominator <- h_prime_xj - h_prime_xjnext
-#   return( z_numerator / z_denominator )
-# }
 
 get_z <- function(j, x, h) {
-  
-  # EQUATION 1
-  # z_{j} = h(x_{j+1}) - h(x_j) - x_{j+1} h'(x_{j+1}) + x_j h'(x_j)
-  # ....... -----------------------------------------------------
-  # .......                h'(x_j) - h'(x_{j+1})
-  # END EQUATION 1
-  # get h(x[j]) and h'(x[j])
-  
   h_xj <- h(x[j])
   h_prime_xj <- grad(h,x[j],method='simple')
   
@@ -87,21 +68,12 @@ get_z <- function(j, x, h) {
   
   z_numerator <- h_xjnext - h_xj - ( x[j+1] * h_prime_xjnext ) + (x[j] * h_prime_xj)
   z_denominator <- h_prime_xj - h_prime_xjnext
-  return(list( z_numerator / z_denominator ))
+  return(z_numerator / z_denominator)
 }
 
 get_z_all <- function(x, h, D) {
-  return(unlist(lapply(1:(length(x) - 1), get_z, x, h)))
+  return(sapply(1:(length(x) - 1), get_z, x, h))
 }
-# get_z_all  <- function(x, h, D) {
-#   k <- length(x)
-#   store_all_z <- c()
-#   for (i in 1:(k-1)) {
-#     store_all_z <- c(store_all_z, get_z(x[i], x[i+1], h))
-#   }
-#   return(store_all_z)
-# }
-
 
 
 # param j: index of the u piece to return
@@ -117,10 +89,7 @@ get_u_segment <- function(j, x, h) {
   h_prime_xj <- grad(h, x[j])
   
   # calculate and return slope and intercept of u_segment
-  intercept <- h_xj - x[j]*h_prime_xj
-  slope <- h_prime_xj
-  
-  return(list(intercept = intercept, slope = slope))
+  return(list(intercept = h_xj - x[j]*h_prime_xj, slope = h_prime_xj))
 }
 
 # param x: vector of k points at which to find tangent lines
@@ -148,10 +117,8 @@ get_l_segment <- function(j, x, h) {
   int_num <- x[j+1]*h(x[j]) - x[j]*h(x[j+1])
   slope_num <- h(x[j+1]) - h(x[j])
   
-  # solving for slope and intercept
-  intercept <- int_num / denom
-  slope <- slope_num / denom
-  return(list(intercept = intercept, slope = slope))
+  # calculate and return slope and intercept
+  return(list(intercept = int_num / denom, slope = slope_num / denom))
 }
 
 # param x: vector of k points
@@ -191,8 +158,9 @@ get_s_integral <- function(u, x, h, full_z) {
 # param h: log of density function
 # param z: vector of intersection points of the tangent lines to x
 # param D: domain of density function
+# param i: index of sample
 # return: vector of n numbers
-sample.s <- function(x, h, z, D) {
+sample.s <- function(x, h, full_z, D, i) {
   # print(paste0("Z: "))
   # print(z)
   # check to make sure h is concave
@@ -207,22 +175,22 @@ sample.s <- function(x, h, z, D) {
   # make sure D is properly formatted
   assert_that(length(D) == 2)
   
-  # combine domain endpoints with the z tangent line
-  # intersection points
-  full_z <- c(D[1], z, D[2])
-  
   # get list of tangent lines
   u <- get_u(x, h)
   
   # get integrals under each segment of s
   s_integrals <- get_s_integral(u, x, h, full_z)
   denom <- sum(s_integrals)
-  # make sure the total integral under s is more than the 
-  # integral under g (since s is an upper bound)
-  test_int <- integrate(function(t) exp(h(t)), D[1], D[2])
-  #assert_that(denom > test_int$value - test_int$abs.error)
-  #assert_that(denom > test_int$value)
-  # get normaized integrals under s
+  
+  if (i %% 10 == 0) {
+    # make sure the total integral under s is more than the 
+    # integral under g (since s is an upper bound)
+    test_int <- integrate(function(t) exp(h(t)), D[1], D[2])
+    assert_that(denom > test_int$value - test_int$abs.error)
+    #assert_that(denom > test_int$value)    
+  }
+
+  # get normalized integrals under s
   s_integrals_norm <- s_integrals/denom
   
   # create the CDF of s
@@ -248,14 +216,21 @@ sample.s <- function(x, h, z, D) {
   # and append to sample vector
   a <- u_star$intercept
   b <- u_star$slope
-  x_star <- (log(b * spillover + exp(a + b * z1)) - a) / b
+  if(b != 0){
+    x_star <- (log(b * spillover + exp(a + b * z1)) - a) / b
+  }
+  else{
+    x_star <- spillover/exp(a) + z1
+  }
+  
   # print(paste0("a: ", a))
   # print(paste0("b: ", b))
   # print(paste0("z1: ", z1))
+  # print(paste0("z2: ", z2))
   # print(paste0("spillover: ", spillover))
   # 
   # 
-  # print(paste0("x*: ", x_star))
+  #print(paste0("x*: ", x_star))
   
   # make sure x* is between z1 and z2
   assert_that(x_star >= z1, x_star <= z2)
@@ -263,44 +238,44 @@ sample.s <- function(x, h, z, D) {
   return(x_star)
 }
 
-# param l: list of tangent lines to points in x
-# param u: list of chords between adjacent points in x
-is_reject <- function(x_star, w, l, u, z, x, h){
-  
-  j <- min(which(x_star < z))
-  u_k <- u[[j]]$intercept + u[[j]]$slope * x_star
-  i <- min(which(x_star < x))-1
-  l_k <- l[[j]]$intercept + l[[j]]$slope * x_star
-  
-  if(w <= exp(l_k - u_k)){
-    return(FALSE)
-  }
-  else{
-    if(w <= exp(h(x_star) - u_k)){
-      return(FALSE)
-    }
-    else{
-      return(TRUE)
-    }
-  }
-  
-}
-
-is_include <- function(x_star, w, l, u, z, x, h){
-  
-  j <- min(which(x_star < z))
-  u_k <- u[[j]]$intercept + u[[j]]$slope * x_star
-  i <- min(which(x_star < x))-1
-  l_k <- l[[j]]$intercept + l[[j]]$slope * x_star
-  
-  if(w > exp(l_k - u_k)){
-    return(TRUE)
-  }
-  else{
-    return(FALSE)
-  }
-  
-}
+# # param l: list of tangent lines to points in x
+# # param u: list of chords between adjacent points in x
+# is_reject <- function(x_star, w, l, u, z, x, h){
+#   
+#   j <- min(which(x_star < z))
+#   u_k <- u[[j]]$intercept + u[[j]]$slope * x_star
+#   i <- min(which(x_star < x))-1
+#   l_k <- l[[j]]$intercept + l[[j]]$slope * x_star
+#   
+#   if(w <= exp(l_k - u_k)){
+#     return(FALSE)
+#   }
+#   else{
+#     if(w <= exp(h(x_star) - u_k)){
+#       return(FALSE)
+#     }
+#     else{
+#       return(TRUE)
+#     }
+#   }
+#   
+# }
+# 
+# is_include <- function(x_star, w, l, u, z, x, h){
+#   
+#   j <- min(which(x_star < z))
+#   u_k <- u[[j]]$intercept + u[[j]]$slope * x_star
+#   i <- min(which(x_star < x))-1
+#   l_k <- l[[j]]$intercept + l[[j]]$slope * x_star
+#   
+#   if(w > exp(l_k - u_k)){
+#     return(TRUE)
+#   }
+#   else{
+#     return(FALSE)
+#   }
+#   
+# }
   
 
 #### setting up
@@ -314,7 +289,7 @@ D <- c(-Inf, Inf)
 # u <- get_u(x, h)
 # l <- get_l(x, h)
 # x_star <- sample.s(x, h, z, D)
-# is_reject(x_star, l, u)
+
 
 
 ars <- function(n, fun, D){
@@ -322,12 +297,11 @@ ars <- function(n, fun, D){
   h <- function(x) {
     return(log(fun(x)))
   }
-  #x <- get_start_points(f, D)
-  x <- c(-10,1,10)
+  x <- get_start_points(f, D)
   
   while(length(sample) < n){
-    #print("X:")
-    # print(x)
+    print("X:")
+    print(x)
     
     z <- get_z_all(x, h, D)
     
@@ -337,8 +311,7 @@ ars <- function(n, fun, D){
     
     u <- get_u(x, h)
     l <- get_l(x, h)
-    x_star <- sample.s(x, h, z, D)
-    #print(x_star)
+    x_star <- sample.s(x, h, full_z, D)
     # print(z)
     #print(paste0("x_star: ", x_star))
     
@@ -349,7 +322,7 @@ ars <- function(n, fun, D){
     j <- min(which(x_star < full_z))
     u_k <- u[[j-1]]$intercept + u[[j-1]]$slope * x_star
     #print(paste0('U-k is',u_k))
-    if (x_star > x[length(x)]){
+    if (x_star > x[length(x)] || x_star < x[1]){
       l_k = -Inf
     }
     else{
