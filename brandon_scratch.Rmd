@@ -2,7 +2,9 @@
 title: "brandon_scratch"
 author: "Brandon Mannion"
 date: "11/27/2018"
-output: html_document
+output: 
+ html_document:
+  latex_engine: xelatex
 ---
 
 # PSEUDO / MISC.
@@ -25,7 +27,7 @@ output: html_document
 
 ## load libraries
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, eval=FALSE)
 library(assertthat)
 library(numDeriv)
 ```
@@ -50,19 +52,11 @@ h <- function(x) {
 }
 ```
 
-## FUNCTION
-## .. intersection of tangent lines for x_{j} and x_{j+1}
-## ... vectorize z code
+## Get intersection of tangent lines for x_{j} and x_{j+1} (FUNCTION)
+- equation from paper
+    - $z_{j} = \frac{h(x_{j+1}) - h(x_j) - x_{j+1} h'(x_{j+1}) + x_j h'(x_j)}{h'(x_j) - h'(x_{j+1})}$
 ```{r}
 get_z <- function(j, x, h) {
-        
-        # EQUATION 1
-        # z_{j} = h(x_{j+1}) - h(x_j) - x_{j+1} h'(x_{j+1}) + x_j h'(x_j)
-        # ....... -----------------------------------------------------
-        # .......                h'(x_j) - h'(x_{j+1})
-        # END EQUATION 1
-
-         # get h(x[j]) and h'(x[j])
         
         h_xj <- h(x[j])
         h_prime_xj <- grad(h,x[j])
@@ -80,20 +74,17 @@ get_z <- function(j, x, h) {
         assert_that(z_result > x[1] && z_result < x[length(x)], msg = "z intersection is outside of X")
        
         return(z_result) 
-        #return(list( z_numerator / z_denominator ))
 }
 ```
 
-## FUNCTION
-## ... get all z for all X from 1 to k-1
+## Get all z for all X from 1 to k-1 (FUNCTION)
 ```{r}
 get_z_all <- function(x, h, D) {
        return(unlist(lapply(1:(length(x) - 1), get_z, x, h)))
 }
 ```
 
-## FUNCTION 
-## ... check log concavity of function
+## Check log concavity of function (FUNCTION)
 ```{r}
 check_log_concave <- function(j,x,h) {
         
@@ -105,6 +96,8 @@ check_log_concave <- function(j,x,h) {
                 fun_u <- function(t) { exp(uj(t)) }
                 return(integrate(fun_u, x[j], x[j+1])$value)
         }
+        
+        # integrate u(x) over x_initial and x_next -> I_u(x)
         u_integral <- get_u_integral()
         
         get_h_integral <- function() {
@@ -112,11 +105,16 @@ check_log_concave <- function(j,x,h) {
                 
                 return(integrate(fun_h, x[j], x[j+1])$value)
         }
+        
+        # integrate h(x) over x_initial and x_next -> I_h(x)
         h_integral <- get_h_integral()
         
         cat("u_integral: ", u_integral, "\nh_integral: ", h_integral, "\n")
+        
+        # check if I_u(x) > I_h(x)
         cat(ifelse(u_integral > h_integral, "upper bound segment > h(x)\n" , "ERROR upper bound segment < h(x)\n"))
         cat("\n")
+        
         get_l_integral <- function() {
                 lj <- function(t) {
                         tmp_l <- get_l_segment(j,x,h)
@@ -125,24 +123,16 @@ check_log_concave <- function(j,x,h) {
                 fun_l <- function(t) { exp(lj(t)) }
                 return(integrate(fun_l, x[j], x[j+1])$value)
         }
+        
+        # integrate l(x) over x_initial and x_next -> I_l(x)
         l_integral <- get_l_integral()
         
        cat("l_integral: ", l_integral, "\nh_integral: ", h_integral, "\n")
+       
+       # check if I_l(x) < I_h(x)
        cat(ifelse(l_integral < h_integral, "lower bound segment < h(x)\n" , "ERROR lower bound segment > h(x)\n"))
        
        assert_that(l_integral < h_integral, msg = "lower bound segment is not less than INPUT density")
        assert_that(u_integral > h_integral , msg = "upper bound segment is not greater than INPUT density")
-        
-        # #################################################
-        # integrate u(x) over x_initial and x_next -> I_u(x)
-        # integrate h(x) over x_initial and x_next -> I_h(x)
-        # integrate l(x) over x_initial and x_next -> I_l(x)
-        # check if I_u(x) > I_h(x)
-        # check if I_l(x) < I_h(x)
-        # ##################################################
-        # u(x_delta) > h(x_delta) ? 
-        # l(x_delta) < h(x_delta) ? 
-        # get_u_segment
-        # get_l_segment
 }
 ```
