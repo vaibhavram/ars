@@ -58,26 +58,49 @@ get_start_points <- function(fun, D, n=3){
 
 #### FROM BRANDON - CHANGE IF HE CHANGES
 
-get_z  <- function(x_initial, x_next, h) {
-  h_xj <- h(x_initial)
-  h_prime_xj <- grad(h,x_initial)
+# get_z  <- function(x_initial, x_next, h) {
+#   h_xj <- h(x_initial)
+#   h_prime_xj <- grad(h,x_initial)
+#   
+#   h_xjnext <- h(x_next)
+#   h_prime_xjnext <- grad(h, x_next)
+#   
+#   z_numerator <- h_xjnext - h_xj - ( x_next * h_prime_xjnext ) + (x_initial * h_prime_xj)
+#   z_denominator <- h_prime_xj - h_prime_xjnext
+#   return( z_numerator / z_denominator )
+# }
+
+get_z <- function(j, x, h) {
   
-  h_xjnext <- h(x_next)
-  h_prime_xjnext <- grad(h, x_next)
+  # EQUATION 1
+  # z_{j} = h(x_{j+1}) - h(x_j) - x_{j+1} h'(x_{j+1}) + x_j h'(x_j)
+  # ....... -----------------------------------------------------
+  # .......                h'(x_j) - h'(x_{j+1})
+  # END EQUATION 1
+  # get h(x[j]) and h'(x[j])
   
-  z_numerator <- h_xjnext - h_xj - ( x_next * h_prime_xjnext ) + (x_initial * h_prime_xj)
+  h_xj <- h(x[j])
+  h_prime_xj <- grad(h,x[j],method='simple')
+  
+  h_xjnext <- h(x[j+1])
+  h_prime_xjnext <- grad(h, x[j+1], method='simple')
+  
+  z_numerator <- h_xjnext - h_xj - ( x[j+1] * h_prime_xjnext ) + (x[j] * h_prime_xj)
   z_denominator <- h_prime_xj - h_prime_xjnext
-  return( z_numerator / z_denominator )
+  return(list( z_numerator / z_denominator ))
 }
 
-get_z_all  <- function(x, h, D) {
-  k <- length(x)
-  store_all_z <- c()
-  for (i in 1:(k-1)) {
-    store_all_z <- c(store_all_z, get_z(x[i], x[i+1], h))
-  }
-  return(store_all_z)
+get_z_all <- function(x, h, D) {
+  return(unlist(lapply(1:(length(x) - 1), get_z, x, h)))
 }
+# get_z_all  <- function(x, h, D) {
+#   k <- length(x)
+#   store_all_z <- c()
+#   for (i in 1:(k-1)) {
+#     store_all_z <- c(store_all_z, get_z(x[i], x[i+1], h))
+#   }
+#   return(store_all_z)
+# }
 
 
 
@@ -170,6 +193,8 @@ get_s_integral <- function(u, x, h, full_z) {
 # param D: domain of density function
 # return: vector of n numbers
 sample.s <- function(x, h, z, D) {
+  # print(paste0("Z: "))
+  # print(z)
   # check to make sure h is concave
   #assert_that(is.concave(h)) # requires function that brandon will write
   
@@ -195,7 +220,8 @@ sample.s <- function(x, h, z, D) {
   # make sure the total integral under s is more than the 
   # integral under g (since s is an upper bound)
   test_int <- integrate(function(t) exp(h(t)), D[1], D[2])
-  assert_that(denom > test_int$value - test_int$abs.error)
+  #assert_that(denom > test_int$value - test_int$abs.error)
+  #assert_that(denom > test_int$value)
   # get normaized integrals under s
   s_integrals_norm <- s_integrals/denom
   
@@ -215,11 +241,21 @@ sample.s <- function(x, h, z, D) {
   z1 <- full_z[j]
   z2 <- full_z[j+1]
   
+  # print(paste0("j: ", j))
+  # print(full_z)
+  
   # solve for the x* values that have the appropriate inverse CDF
   # and append to sample vector
   a <- u_star$intercept
   b <- u_star$slope
   x_star <- (log(b * spillover + exp(a + b * z1)) - a) / b
+  # print(paste0("a: ", a))
+  # print(paste0("b: ", b))
+  # print(paste0("z1: ", z1))
+  # print(paste0("spillover: ", spillover))
+  # 
+  # 
+  # print(paste0("x*: ", x_star))
   
   # make sure x* is between z1 and z2
   assert_that(x_star >= z1, x_star <= z2)
@@ -286,20 +322,41 @@ ars <- function(n, fun, D){
   h <- function(x) {
     return(log(fun(x)))
   }
-  x <- get_start_points(f, D)
+  #x <- get_start_points(f, D)
+  x <- c(-10,1,10)
   
   while(length(sample) < n){
+    #print("X:")
+    # print(x)
+    
     z <- get_z_all(x, h, D)
+    
+    # combine domain endpoints with the z tangent line
+    # intersection points
+    full_z <- c(D[1], z, D[2])
+    
     u <- get_u(x, h)
     l <- get_l(x, h)
     x_star <- sample.s(x, h, z, D)
+    #print(x_star)
+    # print(z)
+    #print(paste0("x_star: ", x_star))
     
     # sampling step
     w <- runif(1)
-    j <- min(which(x_star < z))
-    u_k <- u[[j]]$intercept + u[[j]]$slope * x_star
-    i <- min(which(x_star < x))-1
-    l_k <- l[[j]]$intercept + l[[j]]$slope * x_star
+    #print(paste0('w is',w))
+    #print(paste0('z is',z))
+    j <- min(which(x_star < full_z))
+    u_k <- u[[j-1]]$intercept + u[[j-1]]$slope * x_star
+    #print(paste0('U-k is',u_k))
+    if (x_star > x[length(x)]){
+      l_k = -Inf
+    }
+    else{
+      i <- min(which(x_star < x))-1
+      l_k <- l[[i]]$intercept + l[[i]]$slope * x_star
+    }
+    #print(paste0('L-k is',l_k))
     
     if(w <= exp(l_k - u_k)){
       sample = c(sample, x_star)
