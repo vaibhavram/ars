@@ -30,9 +30,9 @@ library(assertthat)
 library(numDeriv)
 ```
   
-## dummy variables
+## test variables
 ```{r}
-x <- seq(-10, 10, by=0.01)
+x <- seq(-10, 10, by=01)
 
 # log-concave example
 h <- function(x) {
@@ -102,32 +102,36 @@ check_log_concave <- function(j,x,h) {
                     tmp_u <- get_u_segment(j,x,h)
                     return(tmp_u$intercept + tmp_u$slope*t)
                 }
-                fun <- function(t) { exp(uj(t)) }
-                return(integrate(fun, x[j], x[j+1])$value)
+                fun_u <- function(t) { exp(uj(t)) }
+                return(integrate(fun_u, x[j], x[j+1])$value)
         }
         u_integral <- get_u_integral()
         
         get_h_integral <- function() {
-                return(integrate(h, x[j], x[j+1])$value)
+                fun_h <- function(t) { exp(h(t)) }
+                
+                return(integrate(fun_h, x[j], x[j+1])$value)
         }
         h_integral <- get_h_integral()
         
         cat("u_integral: ", u_integral, "\nh_integral: ", h_integral, "\n")
         cat(ifelse(u_integral > h_integral, "upper bound segment > h(x)\n" , "ERROR upper bound segment < h(x)\n"))
-        cat("\n\n")
+        cat("\n")
         get_l_integral <- function() {
                 lj <- function(t) {
                         tmp_l <- get_l_segment(j,x,h)
                         return(tmp_l$intercept + tmp_l$slope*t)
                 }
-                
-                fun <- function(t) { exp(lj(t)) }
-                return(integrate(fun, x[j], x[j+1])$value)
+                fun_l <- function(t) { exp(lj(t)) }
+                return(integrate(fun_l, x[j], x[j+1])$value)
         }
         l_integral <- get_l_integral()
         
        cat("l_integral: ", l_integral, "\nh_integral: ", h_integral, "\n")
        cat(ifelse(l_integral < h_integral, "lower bound segment < h(x)\n" , "ERROR lower bound segment > h(x)\n"))
+       
+       assert_that(l_integral < h_integral, msg = "lower bound segment is not less than INPUT density")
+       assert_that(u_integral > h_integral , msg = "upper bound segment is not greater than INPUT density")
         
         # #################################################
         # integrate u(x) over x_initial and x_next -> I_u(x)
