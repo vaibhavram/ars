@@ -274,13 +274,19 @@ D <- c(-Inf, Inf)
 
 
 
-ars <- function(n, fun, D, batch.size = 100){
+ars <- function(n, fun, D, batch.size = round(n / 10)){
+  
+  # initialize sample
   sample = c()
+  
+  # get h(t) = log(fun(t))
   h <- function(x) {
     return(log(fun(x)))
   }
+  
+  # initialize abscissae
   x <- get_start_points(fun, D)
-  print(x)
+  
   # make sure we are sampling at least 1 point
   assert_that(n > 0)
   
@@ -288,23 +294,29 @@ ars <- function(n, fun, D, batch.size = 100){
   assert_that(length(D) == 2)
   
   while(length(sample) < n){
-    # print("X:")
-    # print(x)
-    
+    # update z and make sure it corresponds in dimension
     z <- get_z_all(x, h, D)
-    
-    # make sure z and x correspond in dimension
     assert_that(length(z) + 1 == length(x))
     
     # combine domain endpoints with the z tangent line
     # intersection points
     full_z <- c(D[1], z, D[2])
     
+    # get upper bound and lower bound
     u <- get_u(x, h)
     l <- get_l(x, h)
+    
+    # get sample of size batch size
     x_stars <- sample.s(batch.size, x, h, full_z)
+    
+    # draw sample from Unif(0,1) of size batch.size
     ws <- runif(batch.size)
+    
+    # get index of corresponding u segment for
+    # each x*
     js <- sapply(x_stars, function(x_star) min(which(x_star < full_z)))
+    
+    # evaluate U_k and L_k at each x*
     uks_xstar <- sapply(1:batch.size, function(i) u[[js[i]-1]]$intercept + u[[js[i]-1]]$slope * x_stars[i])
     lks_xstar <- sapply(1:batch.size, function(index) {
       if (x_stars[index] > x[length(x)] || x_stars[index] < x[1]) {
@@ -314,47 +326,58 @@ ars <- function(n, fun, D, batch.size = 100){
         return(l[[i]]$intercept + l[[i]]$slope * x_stars[index])
       }
     })
+    
+    # check if w <= exp(L(x*) - U(x*)) for each x*
     check1 <- ws <= exp(lks_xstar - uks_xstar)
+    
+    # check if w <= exp(h(x*) - U(x*)) for each x*
     check2 <- ws <= exp(h(x_stars) - uks_xstar)
+    
+    # add points which pass check 1 or 2 to the sample
     sample <- c(sample, x_stars[check1 || check2])
-    x <- c(x, x_stars[!(check1)])
-    # lks <- sapply(x_stars, function(x_stars, x) {
-    #   if (x_star > x[length(x)] || x_star < x[1]){
-    #     l_k = -Inf
-    #   }
-    #   else{
-    #     i <- min(which(x_star < x))-1
-    #     l_k <- l[[i]]$intercept + l[[i]]$slope * x_star
-    #   }
-    # }, x)
-    # for (x_star in x_stars) {
-    #   # sampling step
-    #   w <- runif(1)
-    #   #print(paste0('w is',w))
-    #   #print(paste0('z is',z))
-    #   j <- min(which(x_star < full_z))
-    #   u_k <- u[[j-1]]$intercept + u[[j-1]]$slope * x_star
-    #   #print(paste0('U-k is',u_k))
-    #   if (x_star > x[length(x)] || x_star < x[1]){
-    #     l_k = -Inf
-    #   }
-    #   else{
-    #     i <- min(which(x_star < x))-1
-    #     l_k <- l[[i]]$intercept + l[[i]]$slope * x_star
-    #   }
-    #   #print(paste0('L-k is',l_k))
-    #   
-    #   if(w <= exp(l_k - u_k)){
-    #     sample = c(sample, x_star)
-    #   }
-    #   else{
-    #     # Updating step
-    #     x <- sort(c(x, x_star))
-    #     if(w <= exp(h(x_star) - u_k)){
-    #       sample = c(sample, x_star)
-    #     }
-    #   }
-    # }
+    
+    # add points which fail check 1 to vector of abscissae
+    x <- sort(c(x, x_stars[!(check1)]))
   }
-  return(sample)
+  
+  # return sample of length n
+  return(sample[1:n])
 }
+
+# lks <- sapply(x_stars, function(x_stars, x) {
+#   if (x_star > x[length(x)] || x_star < x[1]){
+#     l_k = -Inf
+#   }
+#   else{
+#     i <- min(which(x_star < x))-1
+#     l_k <- l[[i]]$intercept + l[[i]]$slope * x_star
+#   }
+# }, x)
+# for (x_star in x_stars) {
+#   # sampling step
+#   w <- runif(1)
+#   #print(paste0('w is',w))
+#   #print(paste0('z is',z))
+#   j <- min(which(x_star < full_z))
+#   u_k <- u[[j-1]]$intercept + u[[j-1]]$slope * x_star
+#   #print(paste0('U-k is',u_k))
+#   if (x_star > x[length(x)] || x_star < x[1]){
+#     l_k = -Inf
+#   }
+#   else{
+#     i <- min(which(x_star < x))-1
+#     l_k <- l[[i]]$intercept + l[[i]]$slope * x_star
+#   }
+#   #print(paste0('L-k is',l_k))
+#   
+#   if(w <= exp(l_k - u_k)){
+#     sample = c(sample, x_star)
+#   }
+#   else{
+#     # Updating step
+#     x <- sort(c(x, x_star))
+#     if(w <= exp(h(x_star) - u_k)){
+#       sample = c(sample, x_star)
+#     }
+#   }
+# }
