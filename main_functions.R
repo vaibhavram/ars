@@ -276,22 +276,36 @@ D <- c(-Inf, Inf)
 
 ars <- function(n, fun, D, batch.size = round(n / 10)){
   
+  # checking classes for each argument
+  assert_that(class(n) == "numeric")
+  assert_that(class(fun) == "function")
+  assert_that(class(D) == "numeric")
+  assert_that(class(batch.size) == "numeric")
+  
+  # assure that n is admissible
+  assert_that(length(n) == 1, n > 0)
+  
+  # assure that D is admissible
+  assert_that(length(D) == 2, D[2] > D[1])
+  
+  # assure that batch.size is admissible
+  assert_that(batch.size < n, length)
+  
+  # normalize fun
+  fun_integral <- integrate(fun, D[1], D[2])
+  assert_that(fun_integral$value > 0)
+  f <- function(t) fun(t)/fun_integral$value
+  
   # initialize sample
   sample = c()
   
-  # get h(t) = log(fun(t))
+  # get h(t) = log(f(t))
   h <- function(x) {
-    return(log(fun(x)))
+    return(log(f(x)))
   }
   
   # initialize abscissae
   x <- get_start_points(fun, D)
-  
-  # make sure we are sampling at least 1 point
-  assert_that(n > 0)
-  
-  # make sure D is properly formatted
-  assert_that(length(D) == 2)
   
   while(length(sample) < n){
     # update z and make sure it corresponds in dimension
