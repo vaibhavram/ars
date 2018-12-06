@@ -5,7 +5,7 @@ library(assertthat)
 # param D: domain of density function
 # param n: number of starting points
 # return: list containing n starting points
-get_start_points <- function(fun, D, n=3, x_start=10, x_step=1){
+get_start_points <- function(fun, D, n=3, x_start=2, x_step=1){
   
   # check if the lower bound is finite
   if (is.finite(D[1])){
