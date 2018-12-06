@@ -1,20 +1,18 @@
 library(numDeriv)
 library(assertthat)
-library(testthat)
 
 # param fun: the density function
-# param n: number of starting points
 # param D: domain of density function
+# param n: number of starting points
 # return: list containing n starting points
-# we assume that the input function is log concave
-get_start_points <- function(fun, D, n=3){
+get_start_points <- function(fun, D, n=3, x_start=10, x_step=1){
   
   # check if the lower bound is finite
   if (is.finite(D[1])){
     min = D[1] + 0.001
   }
   else{
-    x = -10
+    x = -x_start
     # if its first derivative is negative, keep it as the lower bound
     if ( (grad(fun,x)/fun(x)) > 0 ) {
       min = x
@@ -22,7 +20,7 @@ get_start_points <- function(fun, D, n=3){
     else {
       # find the lower bound iteratively
       while( (grad(fun,x)/fun(x)) <= 0 ){
-        x <- x-1
+        x <- x-x_step
       }
       min = x 
     }
@@ -33,7 +31,7 @@ get_start_points <- function(fun, D, n=3){
     max = D[2] - 0.001
   }
   else {
-    x = 10
+    x = x_start
     # if its first derivative is negative, keep it as the upper bound
     if ( (grad(fun,x)/fun(x)) < 0 ) {
       max = x
@@ -41,7 +39,7 @@ get_start_points <- function(fun, D, n=3){
     else {
       # find the upper bound iteratively
       while( (grad(fun,x)/fun(x)) >= 0 ){
-        x <- x+1
+        x <- x+x_step
       }
       max =x
     }
@@ -55,10 +53,12 @@ get_start_points <- function(fun, D, n=3){
   return(output)
 }
 
-
-#### FROM BRANDON - CHANGE IF HE CHANGES
-
-
+# param j: index of abscissae for which to find
+#   the tangent line intersection point
+# param x: vector of k abscissae
+# param h: log of density function
+# return: intersection of lines tangent to h
+#   at x[j] and x[j+1]
 get_z <- function(j, x, h) {
   h_xj <- h(x[j])
   h_prime_xj <- grad(h,x[j],method='simple')
@@ -71,13 +71,19 @@ get_z <- function(j, x, h) {
   return(z_numerator / z_denominator)
 }
 
+
+# param x: vector of k abscissae
+# param h: log of density function
+# param D: domain of density function
+# return: vector of k - 1 tangent line
+#   intersection points
 get_z_all <- function(x, h, D) {
   return(sapply(1:(length(x) - 1), get_z, x, h))
 }
 
 
 # param j: index of the u piece to return
-# param x: vector of k points
+# param x: vector of k abscissae
 # param h: log of density function
 # return: list containing slope and intercept of tangent line at x[j]
 get_u_segment <- function(j, x, h) {
@@ -92,9 +98,9 @@ get_u_segment <- function(j, x, h) {
   return(list(intercept = h_xj - x[j]*h_prime_xj, slope = h_prime_xj))
 }
 
-# param x: vector of k points at which to find tangent lines
+# param x: vector of k abscissae
 # param h: log of density function
-# return: list with length(x) entries; jth element containing the slope
+# return: list of k entries; jth element containing the slope
 #   and intercept of the tangent line to h at x[j]
 get_u <- function(x, h) {
   return(lapply(1:length(x), get_u_segment, x, h))
@@ -102,10 +108,11 @@ get_u <- function(x, h) {
 
 
 
-# param j: index of the l piece to return
-# param x: vector of k points
+# param j: index of the l segment to return
+# param x: vector of k abscissae
 # param h: log of density function
-# return: list containing slope and intercept of chord from x[j] to x[j+1]
+# return: list containing slope and intercept of chord 
+#   from x[j] to x[j+1]
 get_l_segment <- function(j, x, h) {
   # make sure j is in range (1, k - 1) inclusive
   assert_that(j > 0 & j < length(x))
@@ -121,18 +128,16 @@ get_l_segment <- function(j, x, h) {
   return(list(intercept = int_num / denom, slope = slope_num / denom))
 }
 
-# param x: vector of k points
+# param x: vector of k abscissae
 # param h: log of density function
-# return: list with length(x) - 1 entries; jth element containing the slope
+# return: list with k - 1 entries; jth element containing the slope
 #   and intercept of the chord from x[j] to x[j+1]
 get_l <- function(x, h) {
   return(lapply(1:(length(x) - 1), get_l_segment, x, h))
 }
 
-
-
 # param u: list of tangent lines to points in x
-# param x: vector of k points 
+# param x: vector of k abscissae 
 # param h: log of density function
 # param full_z: vector of intersection points of the tangent lines to x,
 #   including domain endpoints
@@ -154,133 +159,74 @@ get_s_integral <- function(u, x, h, full_z) {
 }
 
 # param n: number of points to sample
-# param x: vector of k points at which to find tangent lines
+# param x: vector of k abscissae
 # param h: log of density function
-# param z: vector of intersection points of the tangent lines to x
-# param D: domain of density function
-# return: vector of n numbers
-sample.s <- function(n, x, h, full_z) {
-  
-  # get list of tangent lines
-  u <- get_u(x, h)
+# param full_z: vector of intersection points of the tangent 
+#   lines to x, with domain endpoints as well
+# param u: piecewise upper bound fn for h
+# return: vector of n numbers sampled from S,
+#   where S = u / integral(u)
+sample.s <- function(n, x, h, full_z, u) {
   
   # get integrals under each segment of s
+  # and full integral under s
   s_integrals <- get_s_integral(u, x, h, full_z)
-  denom <- sum(s_integrals)
-  
-  # if (i %% 10 == 0) {
-  #   # make sure the total integral under s is more than the 
-  #   # integral under g (since s is an upper bound)
-  #   test_int <- integrate(function(t) exp(h(t)), D[1], D[2])
-  #   assert_that(denom > test_int$value - test_int$abs.error)
-  #   #assert_that(denom > test_int$value)    
-  # }
+  full_s_integral <- sum(s_integrals)
 
   # get normalized integrals under s
-  s_integrals_norm <- s_integrals/denom
+  s_integrals_norm <- s_integrals/full_s_integral
   
   # create the CDF of s
   cumsum_s <- c(0, cumsum(s_integrals_norm))
   
   # draw from random uniform
-  qs <- runif(n) # change to n
-  x_stars <- c()
+  qs <- runif(n)
   
-  for (q in qs) {
-    # find which u-segment q is in the domain for and
-    # calculate how far into the CDF for that segment it is
-    j <- max(which(q > cumsum_s))
-    spillover <- q - cumsum_s[j]
-    u_star <- u[[j]]
-    
-    # get bordering z-values for the appropriate u-segment
-    z1 <- full_z[j]
-    z2 <- full_z[j+1]
-    
-    # print(paste0("j: ", j))
-    # print(full_z)
-    
-    # solve for the x* values that have the appropriate inverse CDF
-    # and append to sample vector
-    a <- u_star$intercept
-    b <- u_star$slope
-    if(b != 0){
-      x_star <- (log(b * spillover + exp(a + b * z1)) - a) / b
+  # get index of u_segments for which each q is in
+  # and calculate how far into the CDF for that
+  # segment it is
+  js <- sapply(qs, function(q) max(which(q > cumsum_s)))
+  spillovers <- qs - cumsum_s[js]
+
+  # get intervals for the domain in which each x* should fall
+  z1s <- full_z[js]
+  z2s <- full_z[js+1]
+
+  # get  u* for each x* and corresponding slope and intercept
+  u_stars <- lapply(js, function(j) u[[j]])
+  as <- sapply(1:n, function(i) u_stars[[i]]$intercept)
+  bs <- sapply(1:n, function(i) u_stars[[i]]$slope)
+
+  # get each x*, using analytical solution to integral
+  x_stars <- sapply(1:n, function(i) {
+    if(bs[i] != 0){
+      return((log(bs[i] * spillovers[i] * full_s_integral + exp(as[i] + bs[i] * z1s[i])) - as[i]) / bs[i])
     }
     else{
-      x_star <- spillover/exp(a) + z1
+      return((spillovers[i] * full_s_integral)/exp(as[i]) + z1s[i])
     }
-    
-    # make sure x* is between z1 and z2
-    assert_that(x_star >= z1, x_star <= z2)
-    
-    x_stars <- c(x_stars, x_star)
-  }
-  
+  })
+
+  # ensure that all x*s are in proper domain
+  assert_that(all(x_stars > z1s & x_stars < z2s))
+
+  # return all x*
   return(x_stars)
 }
 
-# # param l: list of tangent lines to points in x
-# # param u: list of chords between adjacent points in x
-# is_reject <- function(x_star, w, l, u, z, x, h){
-#   
-#   j <- min(which(x_star < z))
-#   u_k <- u[[j]]$intercept + u[[j]]$slope * x_star
-#   i <- min(which(x_star < x))-1
-#   l_k <- l[[j]]$intercept + l[[j]]$slope * x_star
-#   
-#   if(w <= exp(l_k - u_k)){
-#     return(FALSE)
-#   }
-#   else{
-#     if(w <= exp(h(x_star) - u_k)){
-#       return(FALSE)
-#     }
-#     else{
-#       return(TRUE)
-#     }
-#   }
-#   
-# }
-# 
-# is_include <- function(x_star, w, l, u, z, x, h){
-#   
-#   j <- min(which(x_star < z))
-#   u_k <- u[[j]]$intercept + u[[j]]$slope * x_star
-#   i <- min(which(x_star < x))-1
-#   l_k <- l[[j]]$intercept + l[[j]]$slope * x_star
-#   
-#   if(w > exp(l_k - u_k)){
-#     return(TRUE)
-#   }
-#   else{
-#     return(FALSE)
-#   }
-#   
-# }
-  
-
-#### setting up
-set.seed(736)
-D <- c(-Inf, Inf)
-
-
-### sanity check
-# x <- get_start_points(fun, D, n=5)
-# z <- get_z_all(x, h, D)
-# u <- get_u(x, h)
-# l <- get_l(x, h)
-# x_star <- sample.s(x, h, z, D)
-
-
-
-ars <- function(n, fun, D, batch.size = round(n / 10)){
+# param n: number of points to sample
+# param FUN: density function from which to sample
+# param D: domain of density function, a numeric vector of
+#   length two
+# param verbose (optional): verbose output desired?
+# return: n points sampled from FUN using adaptive-rejection 
+#   sampling
+ars <- function(n, FUN, D, verbose = FALSE){
   
   # checking classes for each argument
   assert_that(class(n) == "numeric")
-  assert_that(class(fun) == "function")
+  assert_that(class(FUN) == "function")
   assert_that(class(D) == "numeric")
-  assert_that(class(batch.size) == "numeric")
   
   # assure that n is admissible
   assert_that(length(n) == 1, n > 0)
@@ -288,27 +234,34 @@ ars <- function(n, fun, D, batch.size = round(n / 10)){
   # assure that D is admissible
   assert_that(length(D) == 2, D[2] > D[1])
   
-  # assure that batch.size is admissible
-  assert_that(batch.size < n, length)
-  
-  # normalize fun
-  fun_integral <- integrate(fun, D[1], D[2])
+  # normalize function
+  fun_integral <- integrate(FUN, D[1], D[2])
   assert_that(fun_integral$value > 0)
-  f <- function(t) fun(t)/fun_integral$value
+  f <- function(t) FUN(t)/fun_integral$value
   
   # initialize sample
-  sample = c()
+  sample <- c()
   
   # get h(t) = log(f(t))
   h <- function(x) {
     return(log(f(x)))
   }
   
-  # initialize abscissae
-  x <- get_start_points(fun, D)
+  # initialize abscissae and batch.size
+  x <- get_start_points(FUN, D)
+  batch.size <- 1
+  
+  # index to track iterations, if verbose=TRUE
+  i <- 1
   
   while(length(sample) < n){
-    # update z and make sure it corresponds in dimension
+    
+    # print out info if verbose
+    if (verbose) {
+      cat("Batch ", i, ":\n", sep = "")
+    }
+    
+    # update z and make sure z corresponds in dimension
     z <- get_z_all(x, h, D)
     assert_that(length(z) + 1 == length(x))
     
@@ -316,18 +269,19 @@ ars <- function(n, fun, D, batch.size = round(n / 10)){
     # intersection points
     full_z <- c(D[1], z, D[2])
     
+    #print(full_z)
+    
     # get upper bound and lower bound
     u <- get_u(x, h)
     l <- get_l(x, h)
     
-    # get sample of size batch size
-    x_stars <- sample.s(batch.size, x, h, full_z)
+    # get sample of size batch.size from s
+    x_stars <- sample.s(batch.size, x, h, full_z, u)
     
     # draw sample from Unif(0,1) of size batch.size
     ws <- runif(batch.size)
     
-    # get index of corresponding u segment for
-    # each x*
+    # get index of corresponding u segment for each x*
     js <- sapply(x_stars, function(x_star) min(which(x_star < full_z)))
     
     # evaluate U_k and L_k at each x*
@@ -347,51 +301,28 @@ ars <- function(n, fun, D, batch.size = round(n / 10)){
     # check if w <= exp(h(x*) - U(x*)) for each x*
     check2 <- ws <= exp(h(x_stars) - uks_xstar)
     
-    # add points which pass check 1 or 2 to the sample
-    sample <- c(sample, x_stars[check1 || check2])
+    # add points x* which pass check 1 or 2 to the sample
+    sample <- c(sample, x_stars[check1 | check2])
     
-    # add points which fail check 1 to vector of abscissae
+    # add points x* which fail check 1 to vector of abscissae
+    # and sort
     x <- sort(c(x, x_stars[!(check1)]))
+    
+    # print info if verbose
+    if (verbose) {
+      cat(" Batch Size:", batch.size, "\n")
+      cat(" Accepted:", sum(check1 | check2), "\n")
+      cat(" Rejected:", batch.size - sum(check1 | check2), "\n")
+      cat(" Failed Check 1:", sum(!check1), "\n")
+      i <- i + 1
+    }
+    
+    # increases batch size if none failed check 1
+    if (all(check1)) {
+      batch.size <- 2 * batch.size
+    }
   }
   
   # return sample of length n
   return(sample[1:n])
 }
-
-# lks <- sapply(x_stars, function(x_stars, x) {
-#   if (x_star > x[length(x)] || x_star < x[1]){
-#     l_k = -Inf
-#   }
-#   else{
-#     i <- min(which(x_star < x))-1
-#     l_k <- l[[i]]$intercept + l[[i]]$slope * x_star
-#   }
-# }, x)
-# for (x_star in x_stars) {
-#   # sampling step
-#   w <- runif(1)
-#   #print(paste0('w is',w))
-#   #print(paste0('z is',z))
-#   j <- min(which(x_star < full_z))
-#   u_k <- u[[j-1]]$intercept + u[[j-1]]$slope * x_star
-#   #print(paste0('U-k is',u_k))
-#   if (x_star > x[length(x)] || x_star < x[1]){
-#     l_k = -Inf
-#   }
-#   else{
-#     i <- min(which(x_star < x))-1
-#     l_k <- l[[i]]$intercept + l[[i]]$slope * x_star
-#   }
-#   #print(paste0('L-k is',l_k))
-#   
-#   if(w <= exp(l_k - u_k)){
-#     sample = c(sample, x_star)
-#   }
-#   else{
-#     # Updating step
-#     x <- sort(c(x, x_star))
-#     if(w <= exp(h(x_star) - u_k)){
-#       sample = c(sample, x_star)
-#     }
-#   }
-# }
