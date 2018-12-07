@@ -59,3 +59,44 @@ set.seed(2018)
 f <- dnorm
 D <- c(-Inf, Inf)
 test_output <- get_start_points(f, D, 5)
+
+
+
+# # param l: list of tangent lines to points in x
+# # param u: list of chords between adjacent points in x
+# is_reject <- function(x_star, w, l, u, z, x, h){
+#   
+#   j <- min(which(x_star < z))
+#   u_k <- u[[j]]$intercept + u[[j]]$slope * x_star
+#   i <- min(which(x_star < x))-1
+#   l_k <- l[[j]]$intercept + l[[j]]$slope * x_star
+#   
+#   if(w <= exp(l_k - u_k)){
+#     return(FALSE)
+#   }
+#   else{
+#     if(w <= exp(h(x_star) - u_k)){
+#       return(FALSE)
+#     }
+#     else{
+#       return(TRUE)
+#     }
+#   }
+#   
+# }
+# 
+# is_include <- function(x_star, w, l, u, z, x, h){
+#   
+#   j <- min(which(x_star < z))
+#   u_k <- u[[j]]$intercept + u[[j]]$slope * x_star
+#   i <- min(which(x_star < x))-1
+#   l_k <- l[[j]]$intercept + l[[j]]$slope * x_star
+#   
+#   if(w > exp(l_k - u_k)){
+#     return(TRUE)
+#   }
+#   else{
+#     return(FALSE)
+#   }
+#   
+# }
