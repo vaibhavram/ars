@@ -243,6 +243,66 @@ sample.s <- function(n, x, h, full_z, u) {
   return(x_stars)
 }
 
+# param j: current iteration, within D
+# param x: all X for given density 
+# param h: log of density function
+# return: whether or not provided index satisfies upper and lower bound requirements regarding log-concave density
+check_log_concave <- function(j,x,h) {
+        
+        # integrate u(x) over x_{index} and x_{index + 1}
+        get_u_integral <- function() {
+                uj <- function(t) {
+                    tmp_u <- get_u_segment(j,x,h)
+                    return(tmp_u$intercept + tmp_u$slope*t)
+                }
+                fun_u <- function(t) { exp(uj(t)) }
+                return(integrate(fun_u, x[j], x[j+1])$value)
+        }
+        u_integral <- get_u_integral() ## store result, I_u(x)
+        
+        # integrate h(x) over x_{index} and x_{index + 1}
+        get_h_integral <- function() {
+                fun_h <- function(t) { exp(h(t)) }
+                
+                return(integrate(fun_h, x[j], x[j+1])$value)
+        }
+        h_integral <- get_h_integral() ## store result, I_h(x)
+        
+        # OUTPUT I_u(x) and I_h(x)
+        cat("u_integral: ", u_integral, "\nh_integral: ", h_integral, "\n")
+        
+        # CHECK if I_u(x) > I_h(x) and OUTPUT 
+        cat(ifelse(u_integral > h_integral, "upper bound segment > h(x)\n" , "ERROR upper bound segment < h(x)\n"))
+        cat("\n")
+        
+        # ---------------------- # 
+        # ---------------------- # 
+        # ---------------------- # 
+        
+        # integrate l(x) over x_{index} and x_{index + 1}
+        get_l_integral <- function() {
+                lj <- function(t) {
+                        tmp_l <- get_l_segment(j,x,h)
+                        return(tmp_l$intercept + tmp_l$slope*t)
+                }
+                fun_l <- function(t) { exp(lj(t)) }
+                return(integrate(fun_l, x[j], x[j+1])$value)
+        }
+        l_integral <- get_l_integral() ## store result, I_l(x)
+        
+       # OUTPUT I_l(x) and I_h(x) 
+       cat("l_integral: ", l_integral, "\nh_integral: ", h_integral, "\n")
+       
+       # CHECK if I_l(x) < I_h(x) and OUTPUT 
+       cat(ifelse(l_integral < h_integral, "lower bound segment < h(x)\n" , "ERROR lower bound segment > h(x)\n"))
+       
+       
+       # ASSERT proper upper and lower bounds for u(x) and l(x), respectively
+       # ... otherwise, error message and exit 
+       assert_that(l_integral < h_integral, msg = "lower bound segment is not less than INPUT density")
+       assert_that(u_integral > h_integral , msg = "upper bound segment is not greater than INPUT density")
+}
+
 # param FUN: density function from which to sample
 # param n: number of points to sample
 # param D: domain of density function, a numeric vector of
@@ -344,8 +404,10 @@ ars <- function(FUN, n = 1, D = c(-Inf, Inf), verbose = FALSE){
       cat(" Accepted:", sum(check1 | check2), "\n")
       cat(" Rejected:", batch.size - sum(check1 | check2), "\n")
       cat(" Failed Check 1:", sum(!check1), "\n")
-      i <- i + 1
     }
+    
+    # increment batch number
+    i <- i + 1
     
     # increases batch size if none failed check 1
     if (all(check1)) {
@@ -356,4 +418,5 @@ ars <- function(FUN, n = 1, D = c(-Inf, Inf), verbose = FALSE){
   # return sample of length n
   return(sample[1:n])
 }
+
 
