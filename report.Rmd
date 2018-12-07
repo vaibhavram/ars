@@ -59,7 +59,9 @@ This function is called within ars() on different batch sizes to sample a vector
 
 ### ars()
 
-This is the main function
+This is the main function of the package. It takes in a density function FUN and optionally, a sample size n, a domain D, and a verbose argument which if TRUE will print out information on how many samples were accepted and rejected in each batch iteration.
+
+The ars() function makes use of all the other functions described above to initialize x and then calculate z, u, l, and sample from s during each batch iteration.
 
 ## Tests
 

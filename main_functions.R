@@ -404,8 +404,10 @@ ars <- function(FUN, n = 1, D = c(-Inf, Inf), verbose = FALSE){
       cat(" Accepted:", sum(check1 | check2), "\n")
       cat(" Rejected:", batch.size - sum(check1 | check2), "\n")
       cat(" Failed Check 1:", sum(!check1), "\n")
-      i <- i + 1
     }
+    
+    # increment batch number
+    i <- i + 1
     
     # increases batch size if none failed check 1
     if (all(check1)) {
