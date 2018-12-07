@@ -15,19 +15,25 @@ We created a very modular solution for our Adaptive-Rejection Sampler, which han
 
 ### get_initial_abscissae()
 
-This function builds the vector of initial abscissae. This function is called at the beginning of ars() to set the initial abscissae.
+This function builds the vector of initial abscissae. If both endpoints of the inputted domain are finite, then the function simple uses those endpoints (plus/minus a small term to protect against closed intervals) as two of the abscissae and samples a third abscissae uniformly on the domain. If either of the endpoints is infinite, then the function iterates over values until it finds one whose first derivative is of the appropriate sign. For example, if D is unbounded on the right, we began at x = 2 and keep moving right until we find an x for which the derivative is negative. Again, once we have two finite abscissae based on the domain endpoints, we sample uniformly on the interval bounded by them to select the third abscissae
+
+This function is called at the beginning of ars() to set the initial abscissae.
 
 ### get_z() and get_z_all()
 
-Together, these functions use the abscissae and the log density to find the vector of points at which the tangent lines at the abscissae intersect. The get_z_all() function is called within ars() to recreate the z vector each time the abscissae get updated.
+Together, these functions use the abscissae and the log density to find the vector of points at which the tangent lines at the abscissae intersect. They utilize the equations presented in the Gilks, et. al. paper to calculate the vector of z's. The get_z_all() function is called within ars() to recreate the z vector each time the abscissae get updated.
 
 ### get_u_segment() and get_u()
 
-Together, these functions use the abscissae and the log density to build the piecewise upper bound of the log density using tangent lines at x. We represent this piecewise function as a list of slopes and intercepts rather than as a closure-type variable in order to more easily calculate integrals later on. The get_u() function is called within ars() to recreate the upper bound each time the abscissae get updated.
+Together, these functions use the abscissae and the log density to build the piecewise upper bound of the log density using tangent lines at x. Again, these functions utilize the formulas from Gilks, et. al.
+
+We represent this piecewise function as a list of slopes and intercepts rather than as a closure-type variable in order to more easily calculate integrals later on. The get_u() function is called within ars() to recreate the upper bound each time the abscissae get updated.
 
 ### get_l_segment() and get_l()
 
-These functions work very similarly to get_u_segment() and get_u(), but instead build the piecewise lower bound by calculating the slopes and intercepts of the chords between adjacent abscissae. Again, we represent this piecewise function as a list of slopes and intercepts. The get_l() function is called within ars() to recreate the lower bound each time the abscissae get updated.
+These functions work very similarly to get_u_segment() and get_u(), but instead build the piecewise lower bound by calculating the slopes and intercepts of the chords between adjacent abscissae, again using the formulas presented in Gilks, et. al.
+
+Again, we represent this piecewise function as a list of slopes and intercepts. The get_l() function is called within ars() to recreate the lower bound each time the abscissae get updated.
 
 ### get_s_integral()
 
@@ -47,7 +53,13 @@ $$ [exp(y)]_{a_j+b_jz_j}^{a_j+b_jx^{\star}} = b_jI_s(q - F_s(z_j))$$
 $$ exp(a_j+b_jx^{\star}) - exp(a_j+b_jz_j) = b_jI_s(q - F_s(z_j))$$
 $$ a_j+b_jx^{\star} = log(b_jI_s(q - F_s(z_j)) + exp(a_j+b_jz_j))$$
 $$ x^{\star} = \frac{log(b_jI_s(q - F_s(z_j)) + exp(a_j+b_jz_j)) - a_j}{b_j}$$
-Using this formula, we can convert our q vector into a vector of $x^{\star}$. We return this vector.
+Using this formula as derived, we can convert our q vector into a vector of $x^{\star}$. We return this vector of $x^{\star}$s.
+
+This function is called within ars() on different batch sizes to sample a vector of $x^{\star}$s, which we then check for rejection or acceptance.
+
+### ars()
+
+This is the main function
 
 ## Tests
 
