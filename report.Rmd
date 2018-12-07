@@ -13,13 +13,41 @@ knitr::opts_chunk$set(echo = TRUE)
 
 We created a very modular solution for our Adaptive-Rejection Sampler, which handled unique subtasks within individual functions. Below, we list each function we created and its modular purpose:
 
-* get_initial_abscissae(): Takes in the log of the density and the domain of the density as well as optional arguments k, the number of abscissae; x_start, the initial abscissae values to try; and x_step, the amount to step if the derivative value at the x_start is not the appropriate sign. This function is called within ars() to set the initial abscissae.
-* get_z(): Takes in an index j, a vector of abscissae x, and a concave function h and calculates the coordinate of the intersection point between the tangent lines to h at x[j] and x[j+1]. This function is called within get_z_all() in a vectorized fashion to get the vector of z's.
-* get_z_all(): Takes in a vector of abscissae x and a concave function h and calculates the vector of z's (tangent line intersection points) by calling an apply function that applies get_z() to the elements of x. This function is called within ars() to recreate the z vector each time the abscissae get updated.
-* get_u_segment(): Takes in an index j, a vector of abscissae x, and a concave function h and calculates the slope and intercept of the tangent line to h at x[j]. This function is called within get_u() in a vectorized fashion to get all the piece-wise segments of the upper bound of h.
-* get_u(): Takes in a vector of abscissae x and a concave function h and applies get_u_segment() to get the entire piece-wise upper bound of h. This function is called within ars() to recreate the upper bound each time the abscissae get updated.
-* get_l_segment(): Takes in an index j, a vector of abscissae x, and a concave function h and calculates the slope and intercept of the chord from x[j] to x[j+1]. This function is called within get_l() in a vectorized fashion to get all the piece-wise segments of the lower bound of h.
-* get_l(): Takes in a vector of abscissae x and a concave function h
+### get_initial_abscissae()
+
+This function builds the vector of initial abscissae. This function is called at the beginning of ars() to set the initial abscissae.
+
+### get_z() and get_z_all()
+
+Together, these functions use the abscissae and the log density to find the vector of points at which the tangent lines at the abscissae intersect. The get_z_all() function is called within ars() to recreate the z vector each time the abscissae get updated.
+
+### get_u_segment() and get_u()
+
+Together, these functions use the abscissae and the log density to build the piecewise upper bound of the log density using tangent lines at x. We represent this piecewise function as a list of slopes and intercepts rather than as a closure-type variable in order to more easily calculate integrals later on. The get_u() function is called within ars() to recreate the upper bound each time the abscissae get updated.
+
+### get_l_segment() and get_l()
+
+These functions work very similarly to get_u_segment() and get_u(), but instead build the piecewise lower bound by calculating the slopes and intercepts of the chords between adjacent abscissae. Again, we represent this piecewise function as a list of slopes and intercepts. The get_l() function is called within ars() to recreate the lower bound each time the abscissae get updated.
+
+### get_s_integral()
+
+This function calculates the integrals under each piecewise element of s, which is the normalized exponential of the u function. The function works by calculating the integral under each piecewise element of s analytically, using the formula as calculated below
+
+$$\int_{z_1}^{z_2}exp(u_j(t))dt = \int_{z_1}^{z_2}exp(a_j+b_jt)dt = \int_{a_j+b_jz_1}^{a_j+b_jz_2}exp(y)\frac{1}{b_j}dy = \frac{1}{b_j}[exp(y)]_{a_j+b_jz_1}^{a_j+b_jz_2} = \frac{exp(a_j+b_jz_2) - exp(a_j+b_jz_1)}{b_j}$$
+where $a_j$ and $b_j$ are the intercept and slope of the $j^{th}$ segment of u respectively. The function returns a vector of integrals, of which the $j^{th}$ element corresponds to the integral under the $j^{th}$ segment of s.
+
+### sample.s()
+
+This function performs the actual sampling. It samples n points from s by using the inverse transform sampling method as follows. We draw a vector q of length n from the Unif(0, 1) distribution. Then, for each element of q, we find an $x^{\star}$ such that $F_{s}(x^{\star}) = q$. To do so, we first have to identify the segment of u of which $x^{\star}$ is in the domain. Then, we calculate $x^{\star}$ by using the inverse CDF as follows:
+
+$$\int_{z_j}^{x^{\star}}\frac{1}{I_s}exp(u_j(t))dt = q - F_s(z_j)$$
+$$\int_{z_j}^{x^{\star}}exp(a_j+b_jt)dt = I_s(q - F_s(z_j))$$
+$$\int_{a_j+b_jz_j}^{a_j+b_jx^{\star}}exp(y)\frac{1}{b_j}dy = I_s(q - F_s(z_j))$$
+$$ [exp(y)]_{a_j+b_jz_j}^{a_j+b_jx^{\star}} = b_jI_s(q - F_s(z_j))$$
+$$ exp(a_j+b_jx^{\star}) - exp(a_j+b_jz_j) = b_jI_s(q - F_s(z_j))$$
+$$ a_j+b_jx^{\star} = log(b_jI_s(q - F_s(z_j)) + exp(a_j+b_jz_j))$$
+$$ x^{\star} = \frac{log(b_jI_s(q - F_s(z_j)) + exp(a_j+b_jz_j)) - a_j}{b_j}$$
+Using this formula, we can convert our q vector into a vector of $x^{\star}$. We return this vector.
 
 ## Tests
 
