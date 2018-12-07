@@ -1,22 +1,25 @@
-\name{myfun2}
-\alias{myfun2}
+\name{myfun4}
+\alias{myfun4}
 %- Also NEED an '\alias' for EACH other topic documented here.
-\title{multiply7
+\title{add two inputs
 %%  ~~function to do ... ~~
 }
 \description{
-This function multiplies 7 to the input and returns the numeric result
+%%  ~~ A concise (1-5 lines) description of what the function does. ~~
 }
 \usage{
-myfun2(x)
+myfun4(x, y)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{x}{
+  \item{x}{input a first number
 %%     ~~Describe \code{x} here~~
 }
+  \item{y}{input a second number
+%%     ~~Describe \code{y} here~~
 }
-\details{
+}
+\details{It is meant to add two numbers together
 %%  ~~ If necessary, more details than the description above ~~
 }
 \value{
@@ -30,7 +33,8 @@ myfun2(x)
 %% ~put references to the literature/web site here ~
 }
 \author{
-Jonathan Lee}
+Jonathan Lee
+}
 \note{
 %%  ~~further notes~~
 }
@@ -46,8 +50,9 @@ Jonathan Lee}
 ##--	or do  help(data=index)  for the standard data sets.
 
 ## The function is currently defined as
-function (x)
+function (x, y)
 {
+    x + y
   }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
