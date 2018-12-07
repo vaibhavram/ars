@@ -47,7 +47,7 @@ h <- function(x) {
 }
 
 # NOT log-concave
-h <- function(x) {
+h_not <- function(x) {
         return(exp(x))    
 }
 ```
@@ -88,6 +88,7 @@ get_z_all <- function(x, h, D) {
 ```{r}
 check_log_concave <- function(j,x,h) {
         
+        # integrate u(x) over x_{index} and x_{index + 1}
         get_u_integral <- function() {
                 uj <- function(t) {
                     tmp_u <- get_u_segment(j,x,h)
@@ -96,25 +97,28 @@ check_log_concave <- function(j,x,h) {
                 fun_u <- function(t) { exp(uj(t)) }
                 return(integrate(fun_u, x[j], x[j+1])$value)
         }
+        u_integral <- get_u_integral() ## store result, I_u(x)
         
-        # integrate u(x) over x_initial and x_next -> I_u(x)
-        u_integral <- get_u_integral()
-        
+        # integrate h(x) over x_{index} and x_{index + 1}
         get_h_integral <- function() {
                 fun_h <- function(t) { exp(h(t)) }
                 
                 return(integrate(fun_h, x[j], x[j+1])$value)
         }
+        h_integral <- get_h_integral() ## store result, I_h(x)
         
-        # integrate h(x) over x_initial and x_next -> I_h(x)
-        h_integral <- get_h_integral()
-        
+        # OUTPUT I_u(x) and I_h(x)
         cat("u_integral: ", u_integral, "\nh_integral: ", h_integral, "\n")
         
-        # check if I_u(x) > I_h(x)
+        # CHECK if I_u(x) > I_h(x) and OUTPUT 
         cat(ifelse(u_integral > h_integral, "upper bound segment > h(x)\n" , "ERROR upper bound segment < h(x)\n"))
         cat("\n")
         
+        # ---------------------- # 
+        # ---------------------- # 
+        # ---------------------- # 
+        
+        # integrate l(x) over x_{index} and x_{index + 1}
         get_l_integral <- function() {
                 lj <- function(t) {
                         tmp_l <- get_l_segment(j,x,h)
@@ -123,25 +127,31 @@ check_log_concave <- function(j,x,h) {
                 fun_l <- function(t) { exp(lj(t)) }
                 return(integrate(fun_l, x[j], x[j+1])$value)
         }
+        l_integral <- get_l_integral() ## store result, I_l(x)
         
-        # integrate l(x) over x_initial and x_next -> I_l(x)
-        l_integral <- get_l_integral()
-        
+       # OUTPUT I_l(x) and I_h(x) 
        cat("l_integral: ", l_integral, "\nh_integral: ", h_integral, "\n")
        
-       # check if I_l(x) < I_h(x)
+       # CHECK if I_l(x) < I_h(x) and OUTPUT 
        cat(ifelse(l_integral < h_integral, "lower bound segment < h(x)\n" , "ERROR lower bound segment > h(x)\n"))
        
+       
+       # ASSERT proper upper and lower bounds for u(x) and l(x), respectively
+       # ... otherwise, error message and exit 
        assert_that(l_integral < h_integral, msg = "lower bound segment is not less than INPUT density")
        assert_that(u_integral > h_integral , msg = "upper bound segment is not greater than INPUT density")
 }
 ```
 
-## Get subset of x and check log-concavity
+## [ ] Get subset of x and check log-concavity 
 ```{r}
 subset_check_log_concave <- function(x_window_size, x, h) {
         
-        ## start with window size
+        ## prior check of iteration (i.e., current index) 
+        ## .. and if every 5th iteration
+        ## ==> if so, then as x_j
+        
+        ## submit to FUNCTION  check_log_concave()
         ## choose contiguous regions within X
         ## run check_log_concave FUNCTION on this subset
         ## ... get results on whether satisfies our log concavity conditions 
