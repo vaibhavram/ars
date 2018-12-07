@@ -38,28 +38,74 @@ test_that("get_s_integral() returns appropriate upper-bound integral", {
   expect_lt(s_int - tru_int$value, epsilon)
 })
 
-test_that("Run different tests and compare the results",{
-  significance<-0.05
-  x_norm<-ars(dnorm, n=10000, D=c(-Inf, Inf), verbose = FALSE)
-  output_norm<-ks.test(x_norm, pnorm)
+test_that("Sampling Normal(0,1) through ars() passes K-S test",{
+  significance <- 0.05
+  
+  x_norm <- ars(dnorm, n=10000, D=c(-Inf, Inf), verbose = FALSE)
+  output_norm <- ks.test(x_norm, pnorm)
   expect_lt(significance, output_norm$p.value)
-  x_exp<-ars(dexp, n=10000, D=c(0, Inf), verbose = FALSE)
-  output_exp<-ks.test(x_exp, pexp)
-  expect_lt(significance, output_exp$p.value)
-  x_beta<-ars(function(t) dbeta(t, 2, 2), n=10000, D=c(0, 1), verbose = FALSE)
-  output_beta<-ks.test(x_beta, pbeta, 2, 2)
-  expect_lt(significance, output_beta$p.value)
-  x_gamma<-ars(function(t) dgamma(t, 2), n=10000, D=c(0, Inf), verbose = FALSE)
-  output_gamma<-ks.test(x_gamma, pgamma, 2)
-  expect_lt(significance, output_gamma$p.value)
-  x_chisq2<-ars(function(t) dchisq(t, 2), n=10000, D=c(0, Inf), verbose = FALSE)
-  output_chisq2<-ks.test(x_chisq2, pchisq, 2)
-  expect_lt(significance, output_chisq2$p.value)
-  x_chisq3<-ars(function(t) dchisq(t, 3), n=10000, D=c(0, Inf), verbose = FALSE)
-  output_chisq3<-ks.test(x_chisq3, pchisq, 3)
-  expect_lt(significance, output_chisq3$p.value)
-  x_unif<-ars(dunif, n=10000, D=c(0, 1), verbose = FALSE)
-  output_unif<-ks.test(x_unif, punif)
-  expect_lt(significance, output_unif$p.value)
-  })
+})
 
+test_that("Sampling Beta(1,1) through ars() passes K-S test",{
+  significance <- 0.05
+  
+  x_beta <- ars(function(t) dbeta(t, 1, 1), n=10000, D=c(0, 1), verbose = FALSE)
+  output_beta <- ks.test(x_beta, pbeta, 1, 1)
+  expect_lt(significance, output_beta$p.value)
+})
+
+test_that("Sampling Beta(2,2) through ars() passes K-S test",{
+  significance <- 0.05
+  
+  x_beta2 <- ars(function(t) dbeta(t, 2, 2), n=10000, D=c(0, 1), verbose = FALSE)
+  output_beta2 <- ks.test(x_beta2, pbeta, 2, 2)
+  expect_lt(significance, output_beta2$p.value)
+})
+
+test_that("Sampling Gamma(1) through ars() passes K-S test",{
+  significance <- 0.05
+  
+  x_gamma <- ars(function(t) dgamma(t, 1), n=10000, D=c(0, Inf), verbose = FALSE)
+  output_gamma <- ks.test(x_gamma, pgamma, 1)
+  expect_lt(significance, output_gamma$p.value)
+})
+
+test_that("Sampling Gamma(2) through ars() passes K-S test",{
+  significance <- 0.05
+  
+  x_gamma2 <- ars(function(t) dgamma(t, 2), n=10000, D=c(0, Inf), verbose = FALSE)
+  output_gamma2 <- ks.test(x_gamma2, pgamma, 2)
+  expect_lt(significance, output_gamma2$p.value)
+})
+
+test_that("Sampling ChiSq(2) through ars() passes K-S test",{
+  significance <- 0.05
+  
+  x_chisq2 <- ars(function(t) dchisq(t, 2), n=10000, D=c(0, Inf), verbose = FALSE)
+  output_chisq2 <- ks.test(x_chisq2, pchisq, 2)
+  expect_lt(significance, output_chisq2$p.value)
+})
+
+test_that("Sampling ChiSq(3) through ars() passes K-S test",{
+  significance <- 0.05
+  
+  x_chisq3 <- ars(function(t) dchisq(t, 3), n=10000, D=c(0, Inf), verbose = FALSE)
+  output_chisq3 <- ks.test(x_chisq3, pchisq, 3)
+  expect_lt(significance, output_chisq3$p.value)
+})
+
+test_that("Sampling Exp(1) through ars() passes K-S test",{
+  significance <- 0.05
+  
+  x_exp <- ars(dexp, n=10000, D=c(0, Inf), verbose = FALSE)
+  output_exp <- ks.test(x_exp, pexp)
+  expect_lt(significance, output_exp$p.value)
+})
+
+test_that("Sampling Unif(0,1) through ars() passes K-S test",{
+  significance <- 0.05
+  
+  x_unif <- ars(dunif, n=10000, D=c(0, 1), verbose = FALSE)
+  output_unif <- ks.test(x_unif, punif)
+  expect_lt(significance, output_unif$p.value)
+})

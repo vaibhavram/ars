@@ -69,8 +69,17 @@ One feature we added to ars() is that rather than sampling one value at a time f
 
 ## Tests
 
-### Kolgorov-Smirnov Test
-To ensure the validity of the ars function, we ran test_that functions by setting a significance level to 0.05 and making sure that the p-value is greater than the significance level so that the null hypothesis is true. We also ran the ars function based on different densities with different shape parameters/degrees of freedom (normal, exponential, beta((1,1),(2,2)), gamma(shape 1,2), chi-sq with df=2,3, uniform). The p-values for the ars function were all greater than the default significance level. 
+### Tests for Modular Components
+
+We wrote tests for several of the modular components of our ars() implementation, as listed below:
+
+* A test to check that the functions used to build the upper bound function outputted the correct slopes and tangent lines. 
+* A test to ensure that the function get_s_integral() outputted an integral that was larger than the integral of the density.
+
+### Kolgorov-Smirnov Tests
+To ensure the validity of samples generated from the ars() function, we ran a series of Kolomogorov-Smirnov tests which test for the closeness between an empirical CDF and a given distribution function in a nonparametric manner. We used the Kolomogorov-Smirnov test to test whether our ars() function returned a sample whose empirical CDF was close to the true CDF for a number of common log-concave distributions.
+
+We ran the Kolmogorov-Smirnov test for the following distributions: Normal(0,1), Exponential(1), Beta(1,1), Beta(2,2), Gamma(1,1), Gamma(2,1), $\chi^2_2$, $\chi^2_3$, and Uniform(0,1), each at a significance level of 0.05. For each test, we made sure that the p-value was greater than the significance level, suggesting that the null hypothesis, which is that the sample is drawn from the reference distribution, was true. For all tests, the p-values were greater than the default significance level. 
 
 ## Team Member Contributions
 
