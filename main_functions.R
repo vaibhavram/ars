@@ -53,6 +53,7 @@ get_start_points <- function(fun, D, n=3, x_start=2, x_step=1){
   return(output)
 }
 
+
 # param j: index of abscissae for which to find
 #   the tangent line intersection point
 # param x: vector of k abscissae
@@ -60,6 +61,8 @@ get_start_points <- function(fun, D, n=3, x_start=2, x_step=1){
 # return: intersection of lines tangent to h
 #   at x[j] and x[j+1]
 get_z <- function(j, x, h, eps = 1e-08) {
+
+
   # evaluate h and h' at x[j]
   h_xj <- h(x[j])
   h_prime_xj <- grad(h,x[j],method='simple')
@@ -71,8 +74,6 @@ get_z <- function(j, x, h, eps = 1e-08) {
   # calculate numerator and denominator
   z_numerator <- h_xjnext - h_xj - ( x[j+1] * h_prime_xjnext ) + (x[j] * h_prime_xj)
   z_denominator <- h_prime_xj - h_prime_xjnext
-  
-  # print(z_denominator)
   
   # if h is a straight line, just get average of x's
   if (abs(z_denominator) < eps) {
@@ -162,6 +163,7 @@ get_s_integral <- function(u, x, h, full_z) {
     # get limits for integral and ensure that they are different
     z1 <- full_z[j]
     z2 <- full_z[j+1]
+    
     if (z2 < z1) {
       print(x)
       print(full_z)
@@ -243,65 +245,35 @@ sample.s <- function(n, x, h, full_z, u) {
   return(x_stars)
 }
 
-# param j: current iteration, within D
-# param x: all X for given density 
-# param h: log of density function
-# return: whether or not provided index satisfies upper and lower bound requirements regarding log-concave density
-check_log_concave <- function(j,x,h) {
-        
-        # integrate u(x) over x_{index} and x_{index + 1}
-        get_u_integral <- function() {
-                uj <- function(t) {
-                    tmp_u <- get_u_segment(j,x,h)
-                    return(tmp_u$intercept + tmp_u$slope*t)
-                }
-                fun_u <- function(t) { exp(uj(t)) }
-                return(integrate(fun_u, x[j], x[j+1])$value)
-        }
-        u_integral <- get_u_integral() ## store result, I_u(x)
-        
-        # integrate h(x) over x_{index} and x_{index + 1}
-        get_h_integral <- function() {
-                fun_h <- function(t) { exp(h(t)) }
-                
-                return(integrate(fun_h, x[j], x[j+1])$value)
-        }
-        h_integral <- get_h_integral() ## store result, I_h(x)
-        
-        # OUTPUT I_u(x) and I_h(x)
-        cat("u_integral: ", u_integral, "\nh_integral: ", h_integral, "\n")
-        
-        # CHECK if I_u(x) > I_h(x) and OUTPUT 
-        cat(ifelse(u_integral > h_integral, "upper bound segment > h(x)\n" , "ERROR upper bound segment < h(x)\n"))
-        cat("\n")
-        
-        # ---------------------- # 
-        # ---------------------- # 
-        # ---------------------- # 
-        
-        # integrate l(x) over x_{index} and x_{index + 1}
-        get_l_integral <- function() {
-                lj <- function(t) {
-                        tmp_l <- get_l_segment(j,x,h)
-                        return(tmp_l$intercept + tmp_l$slope*t)
-                }
-                fun_l <- function(t) { exp(lj(t)) }
-                return(integrate(fun_l, x[j], x[j+1])$value)
-        }
-        l_integral <- get_l_integral() ## store result, I_l(x)
-        
-       # OUTPUT I_l(x) and I_h(x) 
-       cat("l_integral: ", l_integral, "\nh_integral: ", h_integral, "\n")
-       
-       # CHECK if I_l(x) < I_h(x) and OUTPUT 
-       cat(ifelse(l_integral < h_integral, "lower bound segment < h(x)\n" , "ERROR lower bound segment > h(x)\n"))
-       
-       
-       # ASSERT proper upper and lower bounds for u(x) and l(x), respectively
-       # ... otherwise, error message and exit 
-       assert_that(l_integral < h_integral, msg = "lower bound segment is not less than INPUT density")
-       assert_that(u_integral > h_integral , msg = "upper bound segment is not greater than INPUT density")
+# check if the given function is linear 
+is_linear <- function(fun, D){
+  if(is.finite(D[1])){
+    min = D[1]
+  }
+  else{
+    min = min(-100, D[2]-1)
+  }
+  if(is.finite(D[2])){
+    max = D[2]
+  }
+  else{
+    max = max(100, D[1]+1)
+  }
+  test = runif(1e5, min, max)
+  results = grad(fun, test) # sapply(test, f) if f isn't vectorized
+  #print(results)
+  
+  # test for constancy
+  if(all(results == results[1])){
+    return(TRUE)
+  }
+  else{
+    return(FALSE)
+  }
+  
 }
+
+
 
 # param FUN: density function from which to sample
 # param n: number of points to sample
@@ -336,8 +308,12 @@ ars <- function(FUN, n = 1, D = c(-Inf, Inf), verbose = FALSE){
     return(log(f(x)))
   }
   
+  is_linear <- is_linear(h,D)
+  
   # initialize abscissae and batch.size
   x <- get_start_points(f, D)
+  print('X is:')
+  print(x)
   #x <- c(1, 2, 3)
   batch.size <- 1
   
@@ -396,7 +372,10 @@ ars <- function(FUN, n = 1, D = c(-Inf, Inf), verbose = FALSE){
     
     # add points x* which fail check 1 to vector of abscissae
     # and sort
-    x <- sort(c(x, x_stars[!(check1)]))
+    if(! is_linear){
+      x <- sort(c(x, x_stars[!(check1)]))
+    }
+    
     
     # print info if verbose
     if (verbose) {
@@ -404,10 +383,8 @@ ars <- function(FUN, n = 1, D = c(-Inf, Inf), verbose = FALSE){
       cat(" Accepted:", sum(check1 | check2), "\n")
       cat(" Rejected:", batch.size - sum(check1 | check2), "\n")
       cat(" Failed Check 1:", sum(!check1), "\n")
+      i <- i + 1
     }
-    
-    # increment batch number
-    i <- i + 1
     
     # increases batch size if none failed check 1
     if (all(check1)) {
@@ -418,5 +395,4 @@ ars <- function(FUN, n = 1, D = c(-Inf, Inf), verbose = FALSE){
   # return sample of length n
   return(sample[1:n])
 }
-
 
