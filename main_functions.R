@@ -148,9 +148,21 @@ get_s_integral <- function(u, x, h, full_z) {
   # helper function to calculate the integral of the jth
   # element of u within the proper domain
   get_integral <- function(j) {
-    uj <- function(t) {u[[j]]$intercept + u[[j]]$slope*t}
-    fun <- function(t) {exp(uj(t))}
-    return(integrate(fun, full_z[j], full_z[j+1])$value)
+    # get limits for integral and ensure that they are different
+    z1 <- full_z[j]
+    z2 <- full_z[j+1]
+    assert_that(z2 > z1)
+
+    # get slope and intercept of u[[j]]
+    a <- u[[j]]$intercept
+    b <- u[[j]]$slope
+
+    # return the analytical solution to the integral
+    if (b == 0) {
+      return(exp(a) * (z2 - z1))
+    } else {
+      return(1 / b * (exp(a + b * z2) - exp(a + b * z1)))
+    }
   }
   
   # apply and return piecewise integrals of s
@@ -214,14 +226,14 @@ sample.s <- function(n, x, h, full_z, u) {
   return(x_stars)
 }
 
-# param n: number of points to sample
 # param FUN: density function from which to sample
+# param n: number of points to sample
 # param D: domain of density function, a numeric vector of
 #   length two
 # param verbose (optional): verbose output desired?
 # return: n points sampled from FUN using adaptive-rejection 
 #   sampling
-ars <- function(n, FUN, D, verbose = FALSE){
+ars <- function(FUN, n = 1, D = c(-Inf, Inf), verbose = FALSE){
   
   # checking classes for each argument
   assert_that(class(n) == "numeric")

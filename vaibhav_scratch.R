@@ -176,8 +176,12 @@ get_l <- function(x, h) {
   return(lapply(1:(length(x) - 1), get_l_segment, x, h))
 }
 
+# this is the numeric solution for getting the s integral
+# but I replaced it with an analytical solution
 
-
+# uj <- function(t) {u[[j]]$intercept + u[[j]]$slope*t}
+# fun <- function(t) {exp(uj(t))}
+# return(integrate(fun, full_z[j], full_z[j+1])$value)
 
 
 
