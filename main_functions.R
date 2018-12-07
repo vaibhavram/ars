@@ -246,34 +246,26 @@ sample.s <- function(n, x, h, full_z, u) {
 }
 
 # check if the given function is linear 
-is_linear <- function(fun, D){
+is_linear <- function(fun, D, eps = 1e-08){
   if(is.finite(D[1])){
     min = D[1]
-  }
-  else{
+  } else {
     min = min(-100, D[2]-1)
   }
+  
   if(is.finite(D[2])){
     max = D[2]
-  }
-  else{
+  } else {
     max = max(100, D[1]+1)
   }
-  test = runif(1e5, min, max)
+  test = runif(100, min, max)
+  test = test[is.finite(fun(test))]
   results = grad(fun, test) # sapply(test, f) if f isn't vectorized
   #print(results)
   
-  # test for constancy
-  if(all(results == results[1])){
-    return(TRUE)
-  }
-  else{
-    return(FALSE)
-  }
-  
+  differences <- abs(results - results[1]) < eps
+  return(all(differences))
 }
-
-
 
 # param FUN: density function from which to sample
 # param n: number of points to sample
@@ -375,7 +367,6 @@ ars <- function(FUN, n = 1, D = c(-Inf, Inf), verbose = FALSE){
     if(! is_linear){
       x <- sort(c(x, x_stars[!(check1)]))
     }
-    
     
     # print info if verbose
     if (verbose) {
