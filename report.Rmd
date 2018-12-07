@@ -70,6 +70,7 @@ One feature we added to ars() is that rather than sampling one value at a time f
 ## Tests
 
 ### Kolgorov-Smirnov Test
+To ensure the validity of the ars function, we ran test_that functions by setting a significance level to 0.05 and making sure that the p-value is greater than the significance level so that the null hypothesis is true. We also ran the ars function based on different densities with different shape parameters/degrees of freedom (normal, exponential, beta((1,1),(2,2)), gamma(shape 1,2), chi-sq with df=2,3, uniform). The p-values for the ars function were all greater than the default significance level. 
 
 ## Team Member Contributions
 
