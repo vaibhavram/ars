@@ -61,9 +61,15 @@ This function is called within ars() on different batch sizes to sample a vector
 
 This is the main function of the package. It takes in a density function FUN and optionally, a sample size n, a domain D, and a verbose argument which if TRUE will print out information on how many samples were accepted and rejected in each batch iteration.
 
-The ars() function makes use of all the other functions described above to initialize x and then calculate z, u, l, and sample from s during each batch iteration.
+The ars() function makes use of all the other functions described above to initialize x and then calculate z, u, l, and sample from s during each batch iteration. After getting a sample using sample.s(), it performs the squeezing test to ascertain which $x^{\star}$s to accept and which to reject/add to the abscissae.
+
+[mention the check for log concavity]
+
+One feature we added to ars() is that rather than sampling one value at a time from sample.s(), it samples a batch of size batch.size each iteration. The batch.size variable is initialized at 1 but is doubled each time all $x^{\star}$s are accepted following the first squeezing test. This speeds up the sampling significantly.
 
 ## Tests
+
+### Kolgorov-Smirnov Test
 
 ## Team Member Contributions
 
