@@ -59,16 +59,27 @@ get_start_points <- function(fun, D, n=3, x_start=2, x_step=1){
 # param h: log of density function
 # return: intersection of lines tangent to h
 #   at x[j] and x[j+1]
-get_z <- function(j, x, h) {
+get_z <- function(j, x, h, eps = 1e-08) {
+  # evaluate h and h' at x[j]
   h_xj <- h(x[j])
   h_prime_xj <- grad(h,x[j],method='simple')
   
+  # evaluate h and h' at x[j+1]
   h_xjnext <- h(x[j+1])
   h_prime_xjnext <- grad(h, x[j+1], method='simple')
   
+  # calculate numerator and denominator
   z_numerator <- h_xjnext - h_xj - ( x[j+1] * h_prime_xjnext ) + (x[j] * h_prime_xj)
   z_denominator <- h_prime_xj - h_prime_xjnext
-  return(z_numerator / z_denominator)
+  
+  # print(z_denominator)
+  
+  # if h is a straight line, just get average of x's
+  if (abs(z_denominator) < eps) {
+    return((x[j]+x[j+1])/2)
+  } else {
+    return(z_numerator / z_denominator)  
+  }
 }
 
 
@@ -77,7 +88,7 @@ get_z <- function(j, x, h) {
 # param D: domain of density function
 # return: vector of k - 1 tangent line
 #   intersection points
-get_z_all <- function(x, h, D) {
+get_z_all <- function(x, h) {
   return(sapply(1:(length(x) - 1), get_z, x, h))
 }
 
@@ -151,6 +162,12 @@ get_s_integral <- function(u, x, h, full_z) {
     # get limits for integral and ensure that they are different
     z1 <- full_z[j]
     z2 <- full_z[j+1]
+    if (z2 < z1) {
+      print(x)
+      print(full_z)
+      print(paste0("Z1: ", z1, " | Z2: ", z2))
+    }
+    
     assert_that(z2 > z1)
 
     # get slope and intercept of u[[j]]
@@ -260,7 +277,8 @@ ars <- function(FUN, n = 1, D = c(-Inf, Inf), verbose = FALSE){
   }
   
   # initialize abscissae and batch.size
-  x <- get_start_points(FUN, D)
+  x <- get_start_points(f, D)
+  #x <- c(1, 2, 3)
   batch.size <- 1
   
   # index to track iterations, if verbose=TRUE
@@ -274,14 +292,14 @@ ars <- function(FUN, n = 1, D = c(-Inf, Inf), verbose = FALSE){
     }
     
     # update z and make sure z corresponds in dimension
-    z <- get_z_all(x, h, D)
+    z <- get_z_all(x, h)
     assert_that(length(z) + 1 == length(x))
     
     # combine domain endpoints with the z tangent line
     # intersection points
     full_z <- c(D[1], z, D[2])
     
-    #print(full_z)
+    # print(full_z)
     
     # get upper bound and lower bound
     u <- get_u(x, h)
@@ -338,3 +356,4 @@ ars <- function(FUN, n = 1, D = c(-Inf, Inf), verbose = FALSE){
   # return sample of length n
   return(sample[1:n])
 }
+
