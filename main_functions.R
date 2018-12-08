@@ -147,6 +147,31 @@ get_l <- function(x, h) {
   return(lapply(1:(length(x) - 1), get_l_segment, x, h))
 }
 
+
+get_l_integral <- function(fun_l, x) {
+        
+        get_integral <- function(j) {
+                
+                x_first <- x[j]
+                x_next <- x[j+1]
+                
+                a <- fun_l[[j]]$intercept
+                b <- fun_l[[j]]$slope
+                
+                if (b == 0) {
+                        return(exp(a) * (x_next - x_first))
+                } else {
+                        return(1 / b * (exp(a + b * x_next) - exp(a + b * x_first)))
+                }
+        }
+       
+        l_integral_all <- sapply(1:length(fun_l), get_integral)
+        return(l_integral_all)
+}
+
+
+
+
 # param u: list of tangent lines to points in x
 # param full_z: vector of intersection points of the tangent lines to x,
 #   including domain endpoints
