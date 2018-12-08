@@ -1,11 +1,19 @@
-Package: arspackage
+Package: ars
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Adaptive-Rejection Sampler
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Author: c(
+    person("Vaibhav", "Ramamoorthy", email = "vaibhavr@berkeley.edu", role = "aut"),
+    person("Jonathan", "Lee", email = "joonkyu_lee@berkeley.edu", role = "aut"),
+    person("Colin", "Kou", email = "colinkou@berkeley.edu", role = "aut"),
+    person("Brandon", "Mannion", email = "bmannion@berkeley.edu", role = "aut"))
+Maintainer: Vaibhav Ramamoorthy <vaibhavr@berkeley.edu>
+Description: An implementation of the adaptive-rejection sampling algorithm
+  in Gilks, et. al. (1992). It allows one to perform adaptive-rejection sampling
+  on a log-concave density.
+License: None
 Encoding: UTF-8
 LazyData: true
+Imports:
+    numDeriv,
+    assertthat

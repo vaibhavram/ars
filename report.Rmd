@@ -54,12 +54,15 @@ where $a_j$ and $b_j$ are the intercept and slope of the $j^{th}$ segment of l, 
 This function calculates the integral under a defined interval for a provided density , given the density and a vector of points. The function returns a vector of integrals for a provided density (via the base R integrate() function) for each region specified by $vector_{j}$ and $vector_{j+1}$ , where $j$ is an index for elements of a given vector. 
 
 ### is_linear()
+       
 This function checks if the function is linear. It generates a random sample from
-the domain D. Then it computes the gradient of all the sample points and checks if
-all of them are approximately equal.
+the domain D. If both endpoints of the inputted domain are finite, then the function simply uses those endpoints as the lower and upper limits and samples points uniformly on the domain of D. If either of the endpoints is infinite, then the function sets a new appropriate value as the new limit. For example, if D is unbounded on the right, we choose the new endpoint as 100 or left bound plus one, whichever is greater. Again, once we have two finite endpoints based on the domain endpoints, we sample uniformly on the interval. Then the function computes the gradient of all the sample points and checks if all of them are approximately equal.
+
+This function is called at the beginning of ars() to check if the log of the given function is in a linear form.
+
 
 ### sample.s()
-
+       
 This function performs the actual sampling. It samples n points from s by using the inverse transform sampling method as follows. We draw a vector q of length n from the Unif(0, 1) distribution. Then, for each element of q, we find an $x^{\star}$ such that $F_{s}(x^{\star}) = q$. To do so, we first have to identify the segment of u of which $x^{\star}$ is in the domain. Then, we calculate $x^{\star}$ by using the inverse CDF as follows:
 
 $$\int_{z_j}^{x^{\star}}\frac{1}{I_s}exp(u_j(t))dt = q - F_s(z_j)$$
