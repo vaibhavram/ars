@@ -27,10 +27,7 @@ Vector of length n containing samples from specified input density.
 Gilks, W. R., and P. Wild. “Adaptive Rejection Sampling for Gibbs Sampling.” Journal of the Royal Statistical Society. Series C (Applied Statistics), vol. 41, no. 2, 1992, pp. 337–348. JSTOR, JSTOR, www.jstor.org/stable/2347565.
 }
 \author{
-Vaibhav Ramamoorthy
-Jonathan Lee
-Colin Kou
-Brandon Mannion
+Vaibhav Ramamoorthy, Jonathan Lee, Colin Kou, Brandon Mannion
 }
 \note{
 %%  ~~further notes~~
