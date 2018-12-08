@@ -155,7 +155,7 @@ get_l <- function(x, h) {
 # return: vector of numbers, with jth element representing
 #   the integral of the exponential of the tangent line of x[j] 
 #   from z[j-1] to z[j] where z[0] = D[1] and z[k] = D[2]
-get_s_integral <- function(u, x, h, full_z) {
+get_s_integral <- function(u, h, full_z) {
   # helper function to calculate the integral of the jth
   # element of u within the proper domain
   get_integral <- function(j) {
@@ -163,11 +163,11 @@ get_s_integral <- function(u, x, h, full_z) {
     z1 <- full_z[j]
     z2 <- full_z[j+1]
     
-    if (z2 < z1) {
-      print(x)
-      print(full_z)
-      print(paste0("Z1: ", z1, " | Z2: ", z2))
-    }
+    # if (z2 < z1) {
+    #   print(x)
+    #   print(full_z)
+    #   print(paste0("Z1: ", z1, " | Z2: ", z2))
+    # }
     
     assert_that(z2 > z1)
 
@@ -188,6 +188,8 @@ get_s_integral <- function(u, x, h, full_z) {
   return(integrals)
 }
 
+get_f_integral <- function()
+
 # param n: number of points to sample
 # param x: vector of k abscissae
 # param h: log of density function
@@ -200,7 +202,7 @@ sample.s <- function(n, x, h, full_z, u) {
   
   # get integrals under each segment of s
   # and full integral under s
-  s_integrals <- get_s_integral(u, x, h, full_z)
+  s_integrals <- get_s_integral(u, h, full_z)
   full_s_integral <- sum(s_integrals)
 
   # get normalized integrals under s
@@ -250,22 +252,29 @@ sample.s <- function(n, x, h, full_z, u) {
 #     comparisons
 # return: TRUE if fun is a linear function
 is_linear <- function(fun, D, eps = 1e-08){
+  
+  # check if domain limits are finite and if not,
+  # set manually
   if(is.finite(D[1])){
-    min = D[1]
+    min <- D[1]
   } else {
-    min = min(-100, D[2]-1)
+    min <- min(-100, D[2]-1)
   }
   
   if(is.finite(D[2])){
-    max = D[2]
+    max <- D[2]
   } else {
-    max = max(100, D[1]+1)
+    max <- max(100, D[1]+1)
   }
-  test = runif(100, min, max)
-  test = test[is.finite(fun(test))]
-  results = grad(fun, test) # sapply(test, f) if f isn't vectorized
-  #print(results)
   
+  # sample 100 test points to apply gradient
+  # and keep only those for which fun(t) is finite
+  test <- runif(100, min, max)
+  test <- test[is.finite(fun(test))]
+  
+  # apply gradient to elements of test
+  # and check and return if they are all the same
+  results <- grad(fun, test)
   differences <- abs(results - results[1]) < eps
   return(all(differences))
 }
