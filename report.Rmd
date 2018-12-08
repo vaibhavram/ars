@@ -115,6 +115,11 @@ Brandon
 
 Jonathan
 
+## Package
 
+The package is located at www.github.com/vaibhavram/ars. You can install it using:
 
-
+```{r eval = FALSE}
+devtools::install_github("vaibhavram/ars")
+library(ars)
+```
