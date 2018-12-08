@@ -1,6 +1,3 @@
-library(numDeriv)
-library(assertthat)
-
 # param fun: the density function
 # param D: domain of density function
 # param n: number of starting points
