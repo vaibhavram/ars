@@ -62,7 +62,6 @@ get_start_points <- function(fun, D, n=3, x_start=2, x_step=1){
 #   at x[j] and x[j+1]
 get_z <- function(j, x, h, eps = 1e-08) {
 
-
   # evaluate h and h' at x[j]
   h_xj <- h(x[j])
   h_prime_xj <- grad(h,x[j],method='simple')
@@ -245,7 +244,11 @@ sample.s <- function(n, x, h, full_z, u) {
   return(x_stars)
 }
 
-# check if the given function is linear 
+# param fun: a log density
+# param D: the domain of the density
+# param eps (optional): threshhold value for difference
+#     comparisons
+# return: TRUE if fun is a linear function
 is_linear <- function(fun, D, eps = 1e-08){
   if(is.finite(D[1])){
     min = D[1]
