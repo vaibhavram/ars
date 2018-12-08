@@ -2,7 +2,10 @@
 title: "Stat 243 Final Project Writeup"
 author: "Vaibhav Ramamoorthy, Colin Kou, Brandon Mannion, and Jonathan Lee"
 date: "12/7/2018"
-output: pdf_document
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
 ---
 
 ```{r setup, include=FALSE}
@@ -75,7 +78,7 @@ $$ a_j+b_jx^{\star} = log(b_jI_s(q - F_s(z_j)) + exp(a_j+b_jz_j))$$
 $$ x^{\star} = \frac{log(b_jI_s(q - F_s(z_j)) + exp(a_j+b_jz_j)) - a_j}{b_j}$$
 Using this formula as derived, we can convert our q vector into a vector of $x^{\star}$. We return this vector of $x^{\star}$s.
 
-This function is called within ars() on different batch sizes to sample a vector of $x^{\star}$s, which we then check for rejection or acceptance.
+This function is called within ars() on different batch sizes to sample a vector of $x^{\star}$s, which we then check for rejection or acceptance.  
 
 ### ars()
 
@@ -111,6 +114,7 @@ Colin
 Brandon coded functions to calculate z (as provided by Gilks et al) and to check for density log concavity. coding of these log concavity checks was completed in parallel with Vaibhav. Brandon also included assertions within the relevant functions for troubleshooting user input. 
 
 Jonathan
+
 
 
 
