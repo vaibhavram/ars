@@ -147,22 +147,24 @@ get_l <- function(x, h) {
   return(lapply(1:(length(x) - 1), get_l_segment, x, h))
 }
 
-# param x: vector of k abscissae
-# param l: list of chords between adjacent x
-#   elements
-# return: vector of integrals of length k-1 of which
-#   the jth element is a list containing the slope and
-#   intercept of the chord between x[j] and x[j+1]
+# param fun_l: lower hull
+# param x: vector from original k abscissae
+# return: vector of l integrals , for comparison with density and check
+#    for log concavity
 get_l_integral <- function(fun_l, x) {
         
         get_integral <- function(j) {
                 
+                # store initial x 
+                #    and next x
                 x_first <- x[j]
                 x_next <- x[j+1]
                 
+                # store intercept and slope at initial x
                 a <- fun_l[[j]]$intercept
                 b <- fun_l[[j]]$slope
                 
+                # integral (analytical, via Vaibhav)
                 if (b == 0) {
                         return(exp(a) * (x_next - x_first))
                 } else {
@@ -170,7 +172,11 @@ get_l_integral <- function(fun_l, x) {
                 }
         }
        
+        # iterate through all of relevant x in l)
         l_integral_all <- sapply(1:length(fun_l), get_integral)
+        
+        # return vector of integrals
+        #    for downstream comparison with density 
         return(l_integral_all)
 }
 
