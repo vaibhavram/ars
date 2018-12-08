@@ -147,10 +147,9 @@ get_l <- function(x, h) {
   return(lapply(1:(length(x) - 1), get_l_segment, x, h))
 }
 
-
 # param fun_l: lower hull
 # param x: vector from original k abscissae
-# return vector of l integrals , for comparison with density and check
+# return: vector of l integrals , for comparison with density and check
 #    for log concavity
 get_l_integral <- function(fun_l, x) {
         
@@ -366,9 +365,9 @@ ars <- function(FUN, n = 1, D = c(-Inf, Inf), verbose = FALSE){
   
   # initialize abscissae and batch.size
   x <- get_start_points(f, D)
-  print('X is:')
-  print(x)
-  #x <- c(1, 2, 3)
+  # print('X is:')
+  # print(x)
+  # #x <- c(1, 2, 3)
   batch.size <- 1
   
   # index to track iterations, if verbose=TRUE
