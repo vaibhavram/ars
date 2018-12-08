@@ -60,7 +60,7 @@ get_start_points <- function(fun, D, n=3, x_start=2, x_step=1){
 get_z <- function(j, x, h, eps = 1e-08) {
   
   # check for correct input, index j
-  assertthat::assert_that(j > 0 & j<= length(k))
+  assertthat::assert_that(j > 0 & j <= length(x))
   
   # evaluate h and h' at x[j]
   h_xj <- h(x[j])
