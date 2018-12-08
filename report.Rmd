@@ -15,7 +15,7 @@ We created a very modular solution for our Adaptive-Rejection Sampler, which han
 
 ### get_initial_abscissae()
 
-This function builds the vector of initial abscissae. If both endpoints of the inputted domain are finite, then the function simply uses those endpoints (plus/minus a small term to protect against closed intervals) as two of the abscissae and samples the rest abscissae uniformly on the domain. If either of the endpoints is infinite, then the function iterates over values until it finds one whose first derivative is of the appropriate sign. For example, if D is unbounded on the right, we began at x = 2 and keep moving right until we find an x for which the derivative is negative. Again, once we have two finite abscissae based on the domain endpoints, we sample uniformly on the interval bounded by them to select the rest abscissae.
+This function builds the vector of initial abscissae. If both endpoints of the inputted domain are finite, then the function simply uses those endpoints (plus/minus a small term to protect against closed intervals) as two of the abscissae and samples the rest of the abscissae uniformly on the domain. If either of the endpoints is infinite, then the function iterates over values until it finds one whose first derivative is of the appropriate sign. For example, if D is unbounded on the right, we began at x = 2 and keep moving right until we find an x for which the derivative is negative. Again, once we have two finite abscissae based on the domain endpoints, we sample uniformly on the interval bounded by them to select the rest abscissae.
 
 This function is called at the beginning of ars() to set the initial abscissae.
 
@@ -42,14 +42,10 @@ This function calculates the integrals under each piecewise element of s, which 
 $$\int_{z_1}^{z_2}exp(u_j(t))dt = \int_{z_1}^{z_2}exp(a_j+b_jt)dt = \int_{a_j+b_jz_1}^{a_j+b_jz_2}exp(y)\frac{1}{b_j}dy = \frac{1}{b_j}[exp(y)]_{a_j+b_jz_1}^{a_j+b_jz_2} = \frac{exp(a_j+b_jz_2) - exp(a_j+b_jz_1)}{b_j}$$
 where $a_j$ and $b_j$ are the intercept and slope of the $j^{th}$ segment of u respectively. The function returns a vector of integrals, of which the $j^{th}$ element corresponds to the integral under the $j^{th}$ segment of s.
 
-
-
 ### is_linear()
 This function checks if the function is linear. It generates a random sample from
 the domain D. Then it computes the gradient of all the sample points and checks if
 all of them are approximately equal.
-
-
 
 ### sample.s()
 
@@ -92,7 +88,13 @@ We ran the Kolmogorov-Smirnov test for the following distributions: Normal(0,1),
 
 ## Team Member Contributions
 
+Vaibhav
 
+Colin
+
+Brandon
+
+Jonathan
 
 
 
