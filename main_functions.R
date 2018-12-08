@@ -147,41 +147,39 @@ get_l <- function(x, h) {
   return(lapply(1:(length(x) - 1), get_l_segment, x, h))
 }
 
-# param fun_l: lower hull
+# param l: lower hull; list of chords where jth element is slope
+#   and intercept of line from x[j] to x[j+1]
 # param x: vector from original k abscissae
 # return: vector of l integrals , for comparison with density and check
 #    for log concavity
-get_l_integral <- function(fun_l, x) {
+get_l_integral <- function(l, x) {
         
-        get_integral <- function(j) {
-                
-                # store initial x 
-                #    and next x
-                x_first <- x[j]
-                x_next <- x[j+1]
-                
-                # store intercept and slope at initial x
-                a <- fun_l[[j]]$intercept
-                b <- fun_l[[j]]$slope
-                
-                # integral (analytical, via Vaibhav)
-                if (b == 0) {
-                        return(exp(a) * (x_next - x_first))
-                } else {
-                        return(1 / b * (exp(a + b * x_next) - exp(a + b * x_first)))
-                }
-        }
-       
-        # iterate through all of relevant x in l)
-        l_integral_all <- sapply(1:length(fun_l), get_integral)
-        
-        # return vector of integrals
-        #    for downstream comparison with density 
-        return(l_integral_all)
+  get_integral <- function(j) {
+          
+    # store initial x 
+    #    and next x
+    x_first <- x[j]
+    x_next <- x[j+1]
+    
+    # store intercept and slope at initial x
+    a <- l[[j]]$intercept
+    b <- l[[j]]$slope
+    
+    # integral (analytical, via Vaibhav)
+    if (b == 0) {
+            return(exp(a) * (x_next - x_first))
+    } else {
+            return(1 / b * (exp(a + b * x_next) - exp(a + b * x_first)))
+    }
+  }
+ 
+  # iterate through all of relevant x in l)
+  l_integral_all <- sapply(1:length(l), get_integral)
+  
+  # return vector of integrals
+  #    for downstream comparison with density 
+  return(l_integral_all)
 }
-
-
-
 
 # param u: list of tangent lines to points in x
 # param full_z: vector of intersection points of the tangent lines to x,
