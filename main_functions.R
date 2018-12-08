@@ -148,26 +148,18 @@ get_l <- function(x, h) {
 }
 
 # param u: list of tangent lines to points in x
-# param x: vector of k abscissae 
-# param h: log of density function
 # param full_z: vector of intersection points of the tangent lines to x,
 #   including domain endpoints
 # return: vector of numbers, with jth element representing
 #   the integral of the exponential of the tangent line of x[j] 
 #   from z[j-1] to z[j] where z[0] = D[1] and z[k] = D[2]
-get_s_integral <- function(u, h, full_z) {
+get_s_integral <- function(u, full_z) {
   # helper function to calculate the integral of the jth
   # element of u within the proper domain
   get_integral <- function(j) {
-    # get limits for integral and ensure that they are different
+    # get limits for integral and ensure that z2 > z1
     z1 <- full_z[j]
     z2 <- full_z[j+1]
-    
-    # if (z2 < z1) {
-    #   print(x)
-    #   print(full_z)
-    #   print(paste0("Z1: ", z1, " | Z2: ", z2))
-    # }
     
     assert_that(z2 > z1)
 
@@ -188,7 +180,28 @@ get_s_integral <- function(u, h, full_z) {
   return(integrals)
 }
 
-get_f_integral <- function()
+# param f: a density function
+# param vec: a vector of points of length k that define intervals
+#   over which to integrate
+# return: a vector of integrals of length k-1 in which the jth
+#   element is the integral under f between vec[j] and vec[j+1]
+get_f_integral <- function(f, vec) {
+  # helper function to calculate the integral under f from
+  # vec[j] to vec[j+1]
+  get_integral <- function(j) {
+    # get limits for integral and ensure that z2 > z1
+    a <- vec[j]
+    b <- vec[j+1]
+    assert_that(b > a)
+    
+    # return the integral
+    return(integrate(f, a, b)$value)
+  }
+  
+  # apply and return piecewise integrals of s
+  integrals <- sapply(1:(length(vec) - 1), get_integral)
+  return(integrals)
+}
 
 # param n: number of points to sample
 # param x: vector of k abscissae
@@ -202,7 +215,7 @@ sample.s <- function(n, x, h, full_z, u) {
   
   # get integrals under each segment of s
   # and full integral under s
-  s_integrals <- get_s_integral(u, h, full_z)
+  s_integrals <- get_s_integral(u, full_z)
   full_s_integral <- sum(s_integrals)
 
   # get normalized integrals under s
@@ -339,11 +352,19 @@ ars <- function(FUN, n = 1, D = c(-Inf, Inf), verbose = FALSE){
     # intersection points
     full_z <- c(D[1], z, D[2])
     
-    # print(full_z)
-    
     # get upper bound and lower bound
     u <- get_u(x, h)
     l <- get_l(x, h)
+    
+    # running concavity check for upper bound
+    s_integrals <- get_s_integral(u, full_z)
+    f_integrals_z <- get_f_integral(f, full_z)
+    assert_that(all(s_integrals > f_integrals_z))
+    
+    # running concavity check for lower bound
+    l_integrals <- get_l_integral(l, x)
+    f_integrals_x <- get_f_integral(f, x)
+    assert_that(all(l_integrals < f_integrals_x))
     
     # get sample of size batch.size from s
     x_stars <- sample.s(batch.size, x, h, full_z, u)
