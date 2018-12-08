@@ -1,6 +1,6 @@
 library(testthat)
 
-source("main_functions.R")
+source("ars.R")
 
 context("Tests for ars package")
 
@@ -46,6 +46,14 @@ test_that("Sampling Normal(0,1) through ars() passes K-S test",{
   expect_lt(significance, output_norm$p.value)
 })
 
+test_that("Sampling Normal(1000,1) through ars() passes K-S test",{
+  significance <- 0.05
+  
+  x_norm <- ars(function(t) dnorm(t, 1000, 1), n=10000, D=c(-Inf, Inf), verbose = FALSE)
+  output_norm <- ks.test(x_norm, pnorm, 1000, 1)
+  expect_lt(significance, output_norm$p.value)
+})
+
 test_that("Sampling Beta(1,1) through ars() passes K-S test",{
   significance <- 0.05
   
@@ -62,7 +70,7 @@ test_that("Sampling Beta(2,2) through ars() passes K-S test",{
   expect_lt(significance, output_beta2$p.value)
 })
 
-test_that("Sampling Gamma(1) through ars() passes K-S test",{
+test_that("Sampling Gamma(1, 1) through ars() passes K-S test",{
   significance <- 0.05
   
   x_gamma <- ars(function(t) dgamma(t, 1), n=10000, D=c(0, Inf), verbose = FALSE)
@@ -70,7 +78,7 @@ test_that("Sampling Gamma(1) through ars() passes K-S test",{
   expect_lt(significance, output_gamma$p.value)
 })
 
-test_that("Sampling Gamma(2) through ars() passes K-S test",{
+test_that("Sampling Gamma(2, 1) through ars() passes K-S test",{
   significance <- 0.05
   
   x_gamma2 <- ars(function(t) dgamma(t, 2), n=10000, D=c(0, Inf), verbose = FALSE)
@@ -108,4 +116,16 @@ test_that("Sampling Unif(0,1) through ars() passes K-S test",{
   x_unif <- ars(dunif, n=10000, D=c(0, 1), verbose = FALSE)
   output_unif <- ks.test(x_unif, punif)
   expect_lt(significance, output_unif$p.value)
+})
+
+test_that("Sampling t(df = 3) throws an error, since it is not log-concave", {
+  f <- function(t) dt(t, df = 3)
+  expect_error(ars(f, 1000))
+  expect_error(ars(f, 1))
+})
+
+test_that("Sampling Gamma(0.5, 1) throws an error, since it is not log-concave", {
+  f <- function(t) dgamma(t, 0.5)
+  expect_error(ars(f, 1000))
+  expect_error(ars(f, 1))
 })

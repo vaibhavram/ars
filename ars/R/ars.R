@@ -61,7 +61,7 @@ get_start_points <- function(fun, D, n=3, x_start=2, x_step=1){
 # return: intersection of lines tangent to h
 #   at x[j] and x[j+1]
 get_z <- function(j, x, h, eps = 1e-08) {
-
+  
   # evaluate h and h' at x[j]
   h_xj <- h(x[j])
   h_prime_xj <- grad(h,x[j],method='simple')
@@ -153,9 +153,9 @@ get_l <- function(x, h) {
 # return: vector of l integrals , for comparison with density and check
 #    for log concavity
 get_l_integral <- function(l, x) {
-        
+  
   get_integral <- function(j) {
-          
+    
     # store initial x 
     #    and next x
     x_first <- x[j]
@@ -167,12 +167,12 @@ get_l_integral <- function(l, x) {
     
     # integral (analytical, via Vaibhav)
     if (b == 0) {
-            return(exp(a) * (x_next - x_first))
+      return(exp(a) * (x_next - x_first))
     } else {
-            return(1 / b * (exp(a + b * x_next) - exp(a + b * x_first)))
+      return(1 / b * (exp(a + b * x_next) - exp(a + b * x_first)))
     }
   }
- 
+  
   # iterate through all of relevant x in l)
   l_integral_all <- sapply(1:length(l), get_integral)
   
@@ -196,11 +196,11 @@ get_s_integral <- function(u, full_z) {
     z2 <- full_z[j+1]
     
     assert_that(z2 > z1)
-
+    
     # get slope and intercept of u[[j]]
     a <- u[[j]]$intercept
     b <- u[[j]]$slope
-
+    
     # return the analytical solution to the integral
     if (b == 0) {
       return(exp(a) * (z2 - z1))
@@ -251,7 +251,7 @@ sample.s <- function(n, x, h, full_z, u) {
   # and full integral under s
   s_integrals <- get_s_integral(u, full_z)
   full_s_integral <- sum(s_integrals)
-
+  
   # get normalized integrals under s
   s_integrals_norm <- s_integrals/full_s_integral
   
@@ -266,16 +266,16 @@ sample.s <- function(n, x, h, full_z, u) {
   # segment it is
   js <- sapply(qs, function(q) max(which(q > cumsum_s)))
   spillovers <- qs - cumsum_s[js]
-
+  
   # get intervals for the domain in which each x* should fall
   z1s <- full_z[js]
   z2s <- full_z[js+1]
-
+  
   # get  u* for each x* and corresponding slope and intercept
   u_stars <- lapply(js, function(j) u[[j]])
   as <- sapply(1:n, function(i) u_stars[[i]]$intercept)
   bs <- sapply(1:n, function(i) u_stars[[i]]$slope)
-
+  
   # get each x*, using analytical solution to integral
   x_stars <- sapply(1:n, function(i) {
     if(bs[i] != 0){
@@ -285,10 +285,10 @@ sample.s <- function(n, x, h, full_z, u) {
       return((spillovers[i] * full_s_integral)/exp(as[i]) + z1s[i])
     }
   })
-
+  
   # ensure that all x*s are in proper domain
   assert_that(all(x_stars > z1s & x_stars < z2s))
-
+  
   # return all x*
   return(x_stars)
 }
@@ -453,4 +453,3 @@ ars <- function(FUN, n = 1, D = c(-Inf, Inf), verbose = FALSE){
   # return sample of length n
   return(sample[1:n])
 }
-
