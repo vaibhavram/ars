@@ -42,7 +42,6 @@ This function calculates the integrals under each piecewise element of s, which 
 $$\int_{z_1}^{z_2}exp(u_j(t))dt = \int_{z_1}^{z_2}exp(a_j+b_jt)dt = \int_{a_j+b_jz_1}^{a_j+b_jz_2}exp(y)\frac{1}{b_j}dy = \frac{1}{b_j}[exp(y)]_{a_j+b_jz_1}^{a_j+b_jz_2} = \frac{exp(a_j+b_jz_2) - exp(a_j+b_jz_1)}{b_j}$$
 where $a_j$ and $b_j$ are the intercept and slope of the $j^{th}$ segment of u respectively. The function returns a vector of integrals, of which the $j^{th}$ element corresponds to the integral under the $j^{th}$ segment of s.
 
-
 ### get_l_integral()
 
 This function calculates the integrals under each piecewise element of l, which are piecewise lower hulls underneath the original density function. The function returns a vector of integrals from $x \in \{x_j,x_{j+1}\}$ for $j = 1,...,k-1$, where $k$ is the subset of D under consideration. This is performed analytically as follows:
@@ -56,10 +55,9 @@ This function calculates the integral under a defined interval for a provided de
 ### is_linear()
        
 This function checks if the function is linear. It generates a random sample from
-the domain D. If both endpoints of the inputted domain are finite, then the function simply uses those endpoints as the lower and upper limits and samples points uniformly on the domain of D. If either of the endpoints is infinite, then the function sets a new appropriate value as the new limit. For example, if D is unbounded on the right, we choose the new endpoint as 100 or left bound plus one, whichever is greater. Again, once we have two finite endpoints based on the domain endpoints, we sample uniformly on the interval. Then the function computes the gradient of all the sample points and checks if all of them are approximately equal.
+the domain D. If both endpoints of the inputted domain are finite, then the function simply uses those endpoints as the lower and upper limits and samples points uniformly on the domain of D to test. If either of the endpoints is infinite, then the function sets a new appropriate value as the new limit. For example, if D is unbounded on the right, we choose the new endpoint as 100 or left bound plus one, whichever is greater. Again, once we have two finite endpoints based on the domain endpoints, we sample uniformly on the interval. Then the function computes the gradient of all the sample points and checks if all of them are approximately equal.
 
 This function is called at the beginning of ars() to check if the log of the given function is in a linear form.
-
 
 ### sample.s()
        
@@ -103,7 +101,7 @@ We ran the Kolmogorov-Smirnov test for the following distributions: Normal(0,1),
 
 ## Team Member Contributions
 
-Vaibhav
+Vaibhav coded functions to build U and L using the formulae provided in Gilks, calculate the integral under S using analytical solutions, and sample from S by building the inverse CDF of S and solving analytically. He also helped put together the main ars() function along with his teammates and especially helped with speeding up the function by enabling the sampling of points in batches. Vaibhav wrote several tests, primarily to test that the creation of the upper bound was being conducted corrently.
 
 Colin
 
