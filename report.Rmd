@@ -115,6 +115,11 @@ Brandon
 
 Jonathan coded the test functions about the results of the ars function using the Kolgorov-Smirnov tests with different parameters so strengthening the robustness of the code for main functions. He also created the ars package template and bundled them together in one package and provided the descriptions for the ars functions. 
 
+## Package
 
+The package is located at www.github.com/vaibhavram/ars. You can install it using:
 
-
+```{r eval = FALSE}
+devtools::install_github("vaibhavram/ars")
+library(ars)
+```
