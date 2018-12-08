@@ -34,6 +34,7 @@ Brandon Mannion
 }
 \note{
 %%  ~~further notes~~
+For density of highly skewed distribution, it is suggested to first transform the density before feeding it to the algorithm and then scale it back after the sample is generated.
 }
 \examples{
 sample <- ars(dnorm, n = 10000, D = c(-Inf, Inf))
