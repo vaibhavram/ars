@@ -46,6 +46,14 @@ test_that("Sampling Normal(0,1) through ars() passes K-S test",{
   expect_lt(significance, output_norm$p.value)
 })
 
+test_that("Sampling Normal(1000,1) through ars() passes K-S test",{
+  significance <- 0.05
+  
+  x_norm <- ars(function(t) dnorm(t, 1000, 1), n=10000, D=c(-Inf, Inf), verbose = FALSE)
+  output_norm <- ks.test(x_norm, pnorm, 1000, 1)
+  expect_lt(significance, output_norm$p.value)
+})
+
 test_that("Sampling Beta(1,1) through ars() passes K-S test",{
   significance <- 0.05
   
