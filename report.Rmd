@@ -2,7 +2,10 @@
 title: "Stat 243 Final Project Writeup"
 author: "Vaibhav Ramamoorthy, Colin Kou, Brandon Mannion, and Jonathan Lee"
 date: "12/7/2018"
-output: pdf_document
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
 ---
 
 ```{r setup, include=FALSE}
@@ -55,7 +58,7 @@ $$ a_j+b_jx^{\star} = log(b_jI_s(q - F_s(z_j)) + exp(a_j+b_jz_j))$$
 $$ x^{\star} = \frac{log(b_jI_s(q - F_s(z_j)) + exp(a_j+b_jz_j)) - a_j}{b_j}$$
 Using this formula as derived, we can convert our q vector into a vector of $x^{\star}$. We return this vector of $x^{\star}$s.
 
-This function is called within ars() on different batch sizes to sample a vector of $x^{\star}$s, which we then check for rejection or acceptance.
+This function is called within ars() on different batch sizes to sample a vector of $x^{\star}$s, which we then check for rejection or acceptance.  
 
 ### ars()
 
@@ -82,6 +85,7 @@ To ensure the validity of samples generated from the ars() function, we ran a se
 We ran the Kolmogorov-Smirnov test for the following distributions: Normal(0,1), Exponential(1), Beta(1,1), Beta(2,2), Gamma(1,1), Gamma(2,1), $\chi^2_2$, $\chi^2_3$, and Uniform(0,1), each at a significance level of 0.05. For each test, we made sure that the p-value was greater than the significance level, suggesting that the null hypothesis, which is that the sample is drawn from the reference distribution, was true. For all tests, the p-values were greater than the default significance level. 
 
 ## Team Member Contributions
+
 
 
 
