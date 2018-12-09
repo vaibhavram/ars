@@ -4,6 +4,29 @@ source("ars.R")
 
 context("Tests for ars package")
 
+test_that("get_z provides intersection of tangent lines for h[j] and h[j+1]", {
+        j <- 1
+        x <- c(seq(-10,10,0.01))
+        h <- function(t) { dnorm(t) }
+        
+        z_result <- get_z(j,x,h, eps=1e-08)
+        
+        expect_gt(z_result, x[1])
+        expect_lt(z_result,x[length(x)])
+})
+
+test_that("get_l_integral() returns appropriate lower-bound integral", {
+        x <- seq(-4.95, 4.95, length.out = 200)
+        h <- function(t) { dnorm(t) }
+        l <- get_l(x, h)
+        D <- c(-5, 5)
+        l_ints <- get_l_integral(l, x)
+        l_int <- sum(l_ints)
+        tru_int <- integrate(f = function(t) exp(h(t)), D[1], D[2])
+        epsilon <- 0.01
+        expect_lt(l_int - tru_int$value, epsilon)
+})
+
 test_that("get_u_segment() returns correct tangent line for simple h", {
   j <- 1
   x <- c(0)
