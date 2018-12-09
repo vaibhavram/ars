@@ -31,12 +31,9 @@ Vaibhav Ramamoorthy, Jonathan Lee, Colin Kou, Brandon Mannion
 }
 \note{
 %%  ~~further notes~~
-<<<<<<< HEAD
-For density with extreme domain values, it is suggested to first transform the density to get smaller mean before feeding it to the algorithm and then scale it back after the sample is generated. For example, to sample from normal(mean=1000,sd=1), first run ars() with standard normal and then add 1000 to all numbers in the sample.
-=======
 For a density with extreme domain values, it is suggested first to transform the
-density to get a smaller mean before feeding it into the algorithm and then to scale it back after the sample is generated.
->>>>>>> da8f9cfd94c4d7cdc136a4387c623affe8b99915
+density to get a smaller mean before feeding it into the algorithm and then to scale it back after the sample is generated. For example, to sample from normal(mean=1000, sd=1), first run ars() with standard normal and then add 1000 to all numbers in the sample.
+
 }
 \examples{
 sample <- ars(dnorm, n = 10000, D = c(-Inf, Inf))
