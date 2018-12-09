@@ -32,6 +32,7 @@ get_start_points <- function(fun, D, n=3, x_start=2, x_step=1){
   }
   else {
     x = x_start
+    print(x)
     # if its first derivative is negative, keep it as the upper bound
     if ( (grad(fun,x)/fun(x)) < 0 ) {
       max = x
@@ -390,15 +391,18 @@ ars <- function(FUN, n = 1, D = c(-Inf, Inf), verbose = FALSE){
     u <- get_u(x, h)
     l <- get_l(x, h)
     
-    # running concavity check for upper bound
-    s_integrals <- get_s_integral(u, full_z)
-    f_integrals_z <- get_f_integral(f, full_z)
-    assert_that(all(s_integrals > f_integrals_z))
-    
-    # running concavity check for lower bound
-    l_integrals <- get_l_integral(l, x)
-    f_integrals_x <- get_f_integral(f, x)
-    assert_that(all(l_integrals < f_integrals_x))
+    # don't need to check concavity if it's linear
+    if(! is_linear){
+      # running concavity check for upper bound
+      s_integrals <- get_s_integral(u, full_z)
+      f_integrals_z <- get_f_integral(f, full_z)
+      assert_that(all(s_integrals >= f_integrals_z))
+      
+      # running concavity check for lower bound
+      l_integrals <- get_l_integral(l, x)
+      f_integrals_x <- get_f_integral(f, x)
+      assert_that(all(l_integrals <= f_integrals_x))
+    }
     
     # get sample of size batch.size from s
     x_stars <- sample.s(batch.size, x, h, full_z, u)
