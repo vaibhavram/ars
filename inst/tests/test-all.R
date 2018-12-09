@@ -140,3 +140,11 @@ test_that("Sampling Gamma(0.5, 1) throws an error, since it is not log-concave",
   expect_error(ars(f, 1000))
   expect_error(ars(f, 10))
 })
+
+
+test_that("is_linear() returns correct value for the function",{
+  h <- function(x) 3.1*x + 2.2
+  g <- function(x) 0.1*x^2 + 4.4
+  expect_true(is_linear(h, D=c(-Inf,Inf)) == TRUE)
+  expect_true(is_linear(g, D=c(-Inf,Inf)) == FALSE)
+})
