@@ -1,7 +1,3 @@
-library(testthat)
-
-source("ars.R")
-
 context("Tests for ars package")
 
 test_that("get_z provides intersection of tangent lines for h[j] and h[j+1]", {

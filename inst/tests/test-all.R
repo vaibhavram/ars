@@ -1,7 +1,3 @@
-library(testthat)
-
-source("ars.R")
-
 context("Tests for ars package")
 
 test_that("get_u_segment() returns correct tangent line for simple h", {
