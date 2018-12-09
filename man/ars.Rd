@@ -27,14 +27,11 @@ Vector of length n containing samples from specified input density.
 Gilks, W. R., and P. Wild. “Adaptive Rejection Sampling for Gibbs Sampling.” Journal of the Royal Statistical Society. Series C (Applied Statistics), vol. 41, no. 2, 1992, pp. 337–348. JSTOR, JSTOR, www.jstor.org/stable/2347565.
 }
 \author{
-Vaibhav Ramamoorthy
-Jonathan Lee
-Colin Kou
-Brandon Mannion
+Vaibhav Ramamoorthy, Jonathan Lee, Colin Kou, Brandon Mannion
 }
 \note{
 %%  ~~further notes~~
-For density of highly skewed distribution, it is suggested to first transform the density before feeding it to the algorithm and then scale it back after the sample is generated.
+For density with extreme domain values, it is suggested to first transform the density to get smaller mean before feeding it to the algorithm and then scale it back after the sample is generated.
 }
 \examples{
 sample <- ars(dnorm, n = 10000, D = c(-Inf, Inf))

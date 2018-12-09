@@ -2,6 +2,7 @@ Package: ars
 Type: Package
 Title: Adaptive-Rejection Sampler
 Version: 0.1.0
+Date: 2018-12-08
 Author: c(
     person("Vaibhav", "Ramamoorthy", email = "vaibhavr@berkeley.edu", role = "aut"),
     person("Jonathan", "Lee", email = "joonkyu_lee@berkeley.edu", role = "aut"),
@@ -11,9 +12,9 @@ Maintainer: Vaibhav Ramamoorthy <vaibhavr@berkeley.edu>
 Description: An implementation of the adaptive-rejection sampling algorithm
   in Gilks, et. al. (1992). It allows one to perform adaptive-rejection sampling
   on a log-concave density.
+Imports:
+  numDeriv,
+  assertthat
 License: None
 Encoding: UTF-8
 LazyData: true
-Imports:
-    numDeriv,
-    assertthat
