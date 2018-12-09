@@ -132,11 +132,11 @@ test_that("Sampling Unif(0,1) through ars() passes K-S test",{
 test_that("Sampling t(df = 3) throws an error, since it is not log-concave", {
   f <- function(t) dt(t, df = 3)
   expect_error(ars(f, 1000))
-  expect_error(ars(f, 1))
+  expect_error(ars(f, 10))
 })
 
 test_that("Sampling Gamma(0.5, 1) throws an error, since it is not log-concave", {
   f <- function(t) dgamma(t, 0.5)
   expect_error(ars(f, 1000))
-  expect_error(ars(f, 1))
+  expect_error(ars(f, 10))
 })
