@@ -50,7 +50,7 @@ test_that("get_s_integral() returns appropriate upper-bound integral", {
   D <- c(-5, 5)
   z <- sapply(1:(length(x) - 1), function(i, vec) (vec[i] + vec[i+1])/2, x)
   full_z <- c(D[1], z, D[2])
-  s_ints <- get_s_integral(u, z, h, full_z)
+  s_ints <- get_s_integral(u, full_z)
   s_int <- sum(s_ints)
   tru_int <- integrate(f = function(t) exp(h(t)), D[1], D[2])
   epsilon <- 0.01
