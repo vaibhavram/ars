@@ -1,3 +1,6 @@
+library(numDeriv)
+library(assertthat)
+
 # param fun: the density function
 # param D: domain of density function
 # param n: number of starting points
@@ -11,12 +14,12 @@ get_start_points <- function(fun, D, n=3, x_start=2, x_step=1){
   else{
     x = -x_start
     # if its first derivative is negative, keep it as the lower bound
-    if ( (numDeriv::grad(fun,x)/fun(x)) > 0 ) {
+    if ( (grad(fun,x)/fun(x)) > 0 ) {
       min = x
     }
     else {
       # find the lower bound iteratively
-      while( (numDeriv::grad(fun,x)/fun(x)) <= 0 ){
+      while( (grad(fun,x)/fun(x)) <= 0 ){
         x <- x-x_step
       }
       min = x 
@@ -30,12 +33,12 @@ get_start_points <- function(fun, D, n=3, x_start=2, x_step=1){
   else {
     x = x_start
     # if its first derivative is negative, keep it as the upper bound
-    if ( (numDeriv::grad(fun,x)/fun(x)) < 0 ) {
+    if ( (grad(fun,x)/fun(x)) < 0 ) {
       max = x
     }
     else {
       # find the upper bound iteratively
-      while( (numDeriv::grad(fun,x)/fun(x)) >= 0 ){
+      while( (grad(fun,x)/fun(x)) >= 0 ){
         x <- x+x_step
       }
       max =x
@@ -59,16 +62,13 @@ get_start_points <- function(fun, D, n=3, x_start=2, x_step=1){
 #   at x[j] and x[j+1]
 get_z <- function(j, x, h, eps = 1e-08) {
   
-  # check for correct input, index j
-  assertthat::assert_that(j > 0 & j <= length(x))
-  
   # evaluate h and h' at x[j]
   h_xj <- h(x[j])
-  h_prime_xj <- numDeriv::grad(h,x[j],method='simple')
+  h_prime_xj <- grad(h,x[j],method='simple')
   
   # evaluate h and h' at x[j+1]
   h_xjnext <- h(x[j+1])
-  h_prime_xjnext <- numDeriv::grad(h, x[j+1], method='simple')
+  h_prime_xjnext <- grad(h, x[j+1], method='simple')
   
   # calculate numerator and denominator
   z_numerator <- h_xjnext - h_xj - ( x[j+1] * h_prime_xjnext ) + (x[j] * h_prime_xj)
@@ -99,11 +99,11 @@ get_z_all <- function(x, h) {
 # return: list containing slope and intercept of tangent line at x[j]
 get_u_segment <- function(j, x, h) {
   # make sure j is in range (1, k) inclusive
-  assertthat::assert_that(j > 0 & j <= length(x))
+  assert_that(j > 0 & j <= length(x))
   
   # get h(x[j]) and h'(x[j])
   h_xj <- h(x[j])
-  h_prime_xj <- numDeriv::grad(h, x[j])
+  h_prime_xj <- grad(h, x[j])
   
   # calculate and return slope and intercept of u_segment
   return(list(intercept = h_xj - x[j]*h_prime_xj, slope = h_prime_xj))
@@ -126,7 +126,7 @@ get_u <- function(x, h) {
 #   from x[j] to x[j+1]
 get_l_segment <- function(j, x, h) {
   # make sure j is in range (1, k - 1) inclusive
-  assertthat::assert_that(j > 0 & j < length(x))
+  assert_that(j > 0 & j < length(x))
   
   # solving for the common denominator
   denom <- x[j+1] - x[j]
@@ -195,7 +195,7 @@ get_s_integral <- function(u, full_z) {
     z1 <- full_z[j]
     z2 <- full_z[j+1]
     
-    assertthat::assert_that(z2 > z1)
+    assert_that(z2 > z1)
     
     # get slope and intercept of u[[j]]
     a <- u[[j]]$intercept
@@ -226,7 +226,7 @@ get_f_integral <- function(f, vec) {
     # get limits for integral and ensure that z2 > z1
     a <- vec[j]
     b <- vec[j+1]
-    assertthat::assert_that(b > a)
+    assert_that(b > a)
     
     # return the integral
     return(integrate(f, a, b)$value)
@@ -287,7 +287,7 @@ sample.s <- function(n, x, h, full_z, u) {
   })
   
   # ensure that all x*s are in proper domain
-  assertthat::assert_that(all(x_stars > z1s & x_stars < z2s))
+  assert_that(all(x_stars > z1s & x_stars < z2s))
   
   # return all x*
   return(x_stars)
@@ -321,7 +321,7 @@ is_linear <- function(fun, D, eps = 1e-08){
   
   # apply gradient to elements of test
   # and check and return if they are all the same
-  results <- numDeriv::grad(fun, test)
+  results <- grad(fun, test)
   differences <- abs(results - results[1]) < eps
   return(all(differences))
 }
@@ -330,24 +330,25 @@ is_linear <- function(fun, D, eps = 1e-08){
 # param n: number of points to sample
 # param D: domain of density function, a numeric vector of
 #   length two
+# param verbose (optional): verbose output desired?
 # return: n points sampled from FUN using adaptive-rejection 
 #   sampling
-ars <- function(FUN, n = 1, D = c(-Inf, Inf)){
+ars <- function(FUN, n = 1, D = c(-Inf, Inf), verbose = FALSE){
   
   # checking classes for each argument
-  assertthat::assert_that(class(n) == "numeric")
-  assertthat::assert_that(class(FUN) == "function")
-  assertthat::assert_that(class(D) == "numeric")
+  assert_that(class(n) == "numeric")
+  assert_that(class(FUN) == "function")
+  assert_that(class(D) == "numeric")
   
   # assure that n is admissible
-  assertthat::assert_that(length(n) == 1, n > 0)
+  assert_that(length(n) == 1, n > 0)
   
   # assure that D is admissible
-  assertthat::assert_that(length(D) == 2, D[2] > D[1])
+  assert_that(length(D) == 2, D[2] > D[1])
   
   # normalize function
   fun_integral <- integrate(FUN, D[1], D[2])
-  assertthat::assert_that(fun_integral$value > 0)
+  assert_that(fun_integral$value > 0)
   f <- function(t) FUN(t)/fun_integral$value
   
   # initialize sample
@@ -367,11 +368,19 @@ ars <- function(FUN, n = 1, D = c(-Inf, Inf)){
   # #x <- c(1, 2, 3)
   batch.size <- 1
   
+  # index to track iterations, if verbose=TRUE
+  i <- 1
+  
   while(length(sample) < n){
+    
+    # print out info if verbose
+    if (verbose) {
+      cat("Batch ", i, ":\n", sep = "")
+    }
     
     # update z and make sure z corresponds in dimension
     z <- get_z_all(x, h)
-    assertthat::assert_that(length(z) + 1 == length(x))
+    assert_that(length(z) + 1 == length(x))
     
     # combine domain endpoints with the z tangent line
     # intersection points
@@ -381,15 +390,18 @@ ars <- function(FUN, n = 1, D = c(-Inf, Inf)){
     u <- get_u(x, h)
     l <- get_l(x, h)
     
-    # running concavity check for upper bound
-    s_integrals <- get_s_integral(u, full_z)
-    f_integrals_z <- get_f_integral(f, full_z)
-    assertthat::assert_that(all(s_integrals > f_integrals_z))
-    
-    # running concavity check for lower bound
-    l_integrals <- get_l_integral(l, x)
-    f_integrals_x <- get_f_integral(f, x)
-    assertthat::assert_that(all(l_integrals < f_integrals_x))
+    # don't need to check concavity if it's linear
+    if(! is_linear){
+      # running concavity check for upper bound
+      s_integrals <- get_s_integral(u, full_z)
+      f_integrals_z <- get_f_integral(f, full_z)
+      assert_that(all(s_integrals >= f_integrals_z))
+      
+      # running concavity check for lower bound
+      l_integrals <- get_l_integral(l, x)
+      f_integrals_x <- get_f_integral(f, x)
+      assert_that(all(l_integrals <= f_integrals_x))
+    }
     
     # get sample of size batch.size from s
     x_stars <- sample.s(batch.size, x, h, full_z, u)
@@ -424,6 +436,15 @@ ars <- function(FUN, n = 1, D = c(-Inf, Inf)){
     # and sort
     if(! is_linear){
       x <- sort(c(x, x_stars[!(check1)]))
+    }
+    
+    # print info if verbose
+    if (verbose) {
+      cat(" Batch Size:", batch.size, "\n")
+      cat(" Accepted:", sum(check1 | check2), "\n")
+      cat(" Rejected:", batch.size - sum(check1 | check2), "\n")
+      cat(" Failed Check 1:", sum(!check1), "\n")
+      i <- i + 1
     }
     
     # increases batch size if none failed check 1
