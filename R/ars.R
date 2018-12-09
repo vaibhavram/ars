@@ -322,7 +322,8 @@ is_linear <- function(fun, D, eps = 1e-08){
   # apply gradient to elements of test
   # and check and return if they are all the same
   results <- numDeriv::grad(fun, test)
-  differences <- abs(results - results[1]) < eps
+  results <- results[!is.na(results)]
+  differences <- abs(results - mean(results)) < eps
   return(all(differences))
 }
 
@@ -358,7 +359,9 @@ ars <- function(FUN, n = 1, D = c(-Inf, Inf)){
     return(log(f(x)))
   }
   
-  is_linear <- is_linear(h,D)
+  # is_linear has a fail rate of < 0.5% so we run it twice
+  # to decrease the probability that it gives a false negative
+  is_linear <- is_linear(h,D) | is_linear(h,D)
   
   # initialize abscissae and batch.size
   x <- get_start_points(f, D)
@@ -435,3 +438,4 @@ ars <- function(FUN, n = 1, D = c(-Inf, Inf)){
   # return sample of length n
   return(sample[1:n])
 }
+
