@@ -96,8 +96,10 @@ One feature we added to ars() is that rather than sampling one value at a time f
 
 We wrote tests for several of the modular components of our ars() implementation, as listed below:
 
+* A test to check that the calculated intersections, z, of sequential tangent lines of concave log-density h are within D
 * A test to check that the functions used to build the upper bound function outputted the correct slopes and tangent lines. 
 * A test to ensure that the function get_s_integral() outputted an integral that was larger than the integral of the density.
+* A test to ensure that the function get_l_integral() outputs the appropriate lower bound integral.
 
 ### Kolgorov-Smirnov Tests
 
@@ -113,7 +115,7 @@ Colin
 
 Brandon coded functions to calculate z (as provided by Gilks et al) and to check for density log concavity. coding of these log concavity checks was completed in parallel with Vaibhav. Brandon also included assertions within the relevant functions for troubleshooting user input. 
 
-Jonathan coded the test functions about the results of the ars function using the Kolgorov-Smirnov tests with different parameters so strengthening the robustness of the code for main functions. He also created the ars package template and bundled them together in one package and provided the descriptions for the ars functions. 
+Jonathan coded the test functions about the results of the ars function using the Kolgorov-Smirnov tests with different parameters so strengthening the robustness of the code for main functions. He also created the ars package template and compiled them in one package and provided the descriptions for the ars functions. 
 
 ## Package
 
