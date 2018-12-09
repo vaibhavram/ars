@@ -96,8 +96,10 @@ One feature we added to ars() is that rather than sampling one value at a time f
 
 We wrote tests for several of the modular components of our ars() implementation, as listed below:
 
+* A test to check that the calculated intersections, z, of sequential tangent lines of concave log-density h are within D
 * A test to check that the functions used to build the upper bound function outputted the correct slopes and tangent lines. 
 * A test to ensure that the function get_s_integral() outputted an integral that was larger than the integral of the density.
+* A test to ensure that the function get_l_integral() outputs the appropriate lower bound integral.
 
 ### Kolgorov-Smirnov Tests
 
