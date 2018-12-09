@@ -111,7 +111,7 @@ We ran the Kolmogorov-Smirnov test for the following distributions: Normal(0,1),
 
 Vaibhav coded functions to build U and L using the formulae provided in Gilks, calculate the integral under S using analytical solutions, and sample from S by building the inverse CDF of S and solving analytically. He also helped put together the main ars() function along with his teammates and especially helped with speeding up the function by enabling the sampling of points in batches. Vaibhav wrote several tests, primarily to test that the creation of the upper bound was being conducted correctly.
 
-Colin
+Colin coded functions to build the vector of initial abscissae and check if a given function is linear. He also implemented the sampling and updating steps of the Gilks's algorithm and created the main ars() function with Vaibhav and tested it with several corner cases.
 
 Brandon coded functions to calculate z (as provided by Gilks et al) and to check for density log concavity. coding of these log concavity checks was completed in parallel with Vaibhav. Brandon also included assertions within the relevant functions for troubleshooting user input. 
 
