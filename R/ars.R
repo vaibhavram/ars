@@ -99,7 +99,7 @@ get_z_all <- function(x, h) {
 # return: list containing slope and intercept of tangent line at x[j]
 get_u_segment <- function(j, x, h) {
   # make sure j is in range (1, k) inclusive
-  assert_that(j > 0 & j <= length(x))
+  assertthat::assert_that(j > 0 & j <= length(x))
   
   # get h(x[j]) and h'(x[j])
   h_xj <- h(x[j])
@@ -126,7 +126,7 @@ get_u <- function(x, h) {
 #   from x[j] to x[j+1]
 get_l_segment <- function(j, x, h) {
   # make sure j is in range (1, k - 1) inclusive
-  assert_that(j > 0 & j < length(x))
+  assertthat::assert_that(j > 0 & j < length(x))
   
   # solving for the common denominator
   denom <- x[j+1] - x[j]
@@ -195,7 +195,7 @@ get_s_integral <- function(u, full_z) {
     z1 <- full_z[j]
     z2 <- full_z[j+1]
     
-    assert_that(z2 > z1)
+    assertthat::assert_that(z2 > z1)
     
     # get slope and intercept of u[[j]]
     a <- u[[j]]$intercept
@@ -226,7 +226,7 @@ get_f_integral <- function(f, vec) {
     # get limits for integral and ensure that z2 > z1
     a <- vec[j]
     b <- vec[j+1]
-    assert_that(b > a)
+    assertthat::assert_that(b > a)
     
     # return the integral
     return(integrate(f, a, b)$value)
@@ -287,7 +287,7 @@ sample.s <- function(n, x, h, full_z, u) {
   })
   
   # ensure that all x*s are in proper domain
-  assert_that(all(x_stars > z1s & x_stars < z2s))
+  assertthat::assert_that(all(x_stars > z1s & x_stars < z2s))
   
   # return all x*
   return(x_stars)
@@ -330,25 +330,24 @@ is_linear <- function(fun, D, eps = 1e-08){
 # param n: number of points to sample
 # param D: domain of density function, a numeric vector of
 #   length two
-# param verbose (optional): verbose output desired?
 # return: n points sampled from FUN using adaptive-rejection 
 #   sampling
-ars <- function(FUN, n = 1, D = c(-Inf, Inf), verbose = FALSE){
+ars <- function(FUN, n = 1, D = c(-Inf, Inf)){
   
   # checking classes for each argument
-  assert_that(class(n) == "numeric")
-  assert_that(class(FUN) == "function")
-  assert_that(class(D) == "numeric")
+  assertthat::assert_that(class(n) == "numeric")
+  assertthat::assert_that(class(FUN) == "function")
+  assertthat::assert_that(class(D) == "numeric")
   
   # assure that n is admissible
-  assert_that(length(n) == 1, n > 0)
+  assertthat::assert_that(length(n) == 1, n > 0)
   
   # assure that D is admissible
-  assert_that(length(D) == 2, D[2] > D[1])
+  assertthat::assert_that(length(D) == 2, D[2] > D[1])
   
   # normalize function
   fun_integral <- integrate(FUN, D[1], D[2])
-  assert_that(fun_integral$value > 0)
+  assertthat::assert_that(fun_integral$value > 0)
   f <- function(t) FUN(t)/fun_integral$value
   
   # initialize sample
@@ -363,24 +362,13 @@ ars <- function(FUN, n = 1, D = c(-Inf, Inf), verbose = FALSE){
   
   # initialize abscissae and batch.size
   x <- get_start_points(f, D)
-  # print('X is:')
-  # print(x)
-  # #x <- c(1, 2, 3)
   batch.size <- 1
-  
-  # index to track iterations, if verbose=TRUE
-  i <- 1
   
   while(length(sample) < n){
     
-    # print out info if verbose
-    if (verbose) {
-      cat("Batch ", i, ":\n", sep = "")
-    }
-    
     # update z and make sure z corresponds in dimension
     z <- get_z_all(x, h)
-    assert_that(length(z) + 1 == length(x))
+    assertthat::assert_that(length(z) + 1 == length(x))
     
     # combine domain endpoints with the z tangent line
     # intersection points
@@ -395,12 +383,12 @@ ars <- function(FUN, n = 1, D = c(-Inf, Inf), verbose = FALSE){
       # running concavity check for upper bound
       s_integrals <- get_s_integral(u, full_z)
       f_integrals_z <- get_f_integral(f, full_z)
-      assert_that(all(s_integrals >= f_integrals_z))
+      assertthat::assert_that(all(s_integrals >= f_integrals_z))
       
       # running concavity check for lower bound
       l_integrals <- get_l_integral(l, x)
       f_integrals_x <- get_f_integral(f, x)
-      assert_that(all(l_integrals <= f_integrals_x))
+      assertthat::assert_that(all(l_integrals <= f_integrals_x))
     }
     
     # get sample of size batch.size from s
@@ -436,15 +424,6 @@ ars <- function(FUN, n = 1, D = c(-Inf, Inf), verbose = FALSE){
     # and sort
     if(! is_linear){
       x <- sort(c(x, x_stars[!(check1)]))
-    }
-    
-    # print info if verbose
-    if (verbose) {
-      cat(" Batch Size:", batch.size, "\n")
-      cat(" Accepted:", sum(check1 | check2), "\n")
-      cat(" Rejected:", batch.size - sum(check1 | check2), "\n")
-      cat(" Failed Check 1:", sum(!check1), "\n")
-      i <- i + 1
     }
     
     # increases batch size if none failed check 1
