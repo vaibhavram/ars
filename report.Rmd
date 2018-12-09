@@ -113,7 +113,7 @@ Colin
 
 Brandon coded functions to calculate z (as provided by Gilks et al) and to check for density log concavity. coding of these log concavity checks was completed in parallel with Vaibhav. Brandon also included assertions within the relevant functions for troubleshooting user input. 
 
-Jonathan coded the test functions about the results of the ars function using the Kolgorov-Smirnov tests with different parameters so strengthening the robustness of the code for main functions. He also created the ars package template and bundled them together in one package and provided the descriptions for the ars functions. 
+Jonathan coded the test functions about the results of the ars function using the Kolgorov-Smirnov tests with different parameters so strengthening the robustness of the code for main functions. He also created the ars package template and compiled them in one package and provided the descriptions for the ars functions. 
 
 ## Package
 
