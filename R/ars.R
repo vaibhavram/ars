@@ -14,12 +14,12 @@ get_start_points <- function(fun, D, n=3, x_start=2, x_step=1){
   else{
     x = -x_start
     # if its first derivative is negative, keep it as the lower bound
-    if ( (grad(fun,x)/fun(x)) > 0 ) {
+    if ( (numDeriv::grad(fun,x)/fun(x)) > 0 ) {
       min = x
     }
     else {
       # find the lower bound iteratively
-      while( (grad(fun,x)/fun(x)) <= 0 ){
+      while( (numDeriv::grad(fun,x)/fun(x)) <= 0 ){
         x <- x-x_step
       }
       min = x 
@@ -33,12 +33,12 @@ get_start_points <- function(fun, D, n=3, x_start=2, x_step=1){
   else {
     x = x_start
     # if its first derivative is negative, keep it as the upper bound
-    if ( (grad(fun,x)/fun(x)) < 0 ) {
+    if ( (numDeriv::grad(fun,x)/fun(x)) < 0 ) {
       max = x
     }
     else {
       # find the upper bound iteratively
-      while( (grad(fun,x)/fun(x)) >= 0 ){
+      while( (numDeriv::grad(fun,x)/fun(x)) >= 0 ){
         x <- x+x_step
       }
       max =x
@@ -64,11 +64,11 @@ get_z <- function(j, x, h, eps = 1e-08) {
   
   # evaluate h and h' at x[j]
   h_xj <- h(x[j])
-  h_prime_xj <- grad(h,x[j],method='simple')
+  h_prime_xj <- numDeriv::grad(h,x[j],method='simple')
   
   # evaluate h and h' at x[j+1]
   h_xjnext <- h(x[j+1])
-  h_prime_xjnext <- grad(h, x[j+1], method='simple')
+  h_prime_xjnext <- numDeriv::grad(h, x[j+1], method='simple')
   
   # calculate numerator and denominator
   z_numerator <- h_xjnext - h_xj - ( x[j+1] * h_prime_xjnext ) + (x[j] * h_prime_xj)
@@ -103,7 +103,7 @@ get_u_segment <- function(j, x, h) {
   
   # get h(x[j]) and h'(x[j])
   h_xj <- h(x[j])
-  h_prime_xj <- grad(h, x[j])
+  h_prime_xj <- numDeriv::grad(h, x[j])
   
   # calculate and return slope and intercept of u_segment
   return(list(intercept = h_xj - x[j]*h_prime_xj, slope = h_prime_xj))
@@ -321,7 +321,7 @@ is_linear <- function(fun, D, eps = 1e-08){
   
   # apply gradient to elements of test
   # and check and return if they are all the same
-  results <- grad(fun, test)
+  results <- numDeriv::grad(fun, test)
   differences <- abs(results - results[1]) < eps
   return(all(differences))
 }
