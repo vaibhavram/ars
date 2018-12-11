@@ -71,54 +71,61 @@ test_that("get_l_integral() returns appropriate lower-bound integral", {
 context("Kolmogorov-Smirnov Tests")
 
 test_that("Sampling Normal(0,1) through ars() passes K-S test",{
+  set.seed(243)
   significance <- 0.05
   
-  x_norm <- ars(dnorm, n=50000, D=c(-Inf, Inf))
+  x_norm <- ars(dnorm, n=10000, D=c(-Inf, Inf))
   output_norm <- ks.test(x_norm, pnorm)
   expect_lt(significance, output_norm$p.value)
 })
 
 test_that("Sampling Beta(1,1) through ars() passes K-S test",{
+  set.seed(243)
   significance <- 0.05
   
-  x_beta <- ars(function(t) dbeta(t, 1, 1), n=50000, D=c(0, 1))
+  x_beta <- ars(function(t) dbeta(t, 1, 1), n=10000, D=c(0, 1))
   output_beta <- ks.test(x_beta, pbeta, 1, 1)
   expect_lt(significance, output_beta$p.value)
 })
 
 test_that("Sampling Beta(2,2) through ars() passes K-S test",{
+  set.seed(243)
   significance <- 0.05
   
-  x_beta2 <- ars(function(t) dbeta(t, 2, 2), n=50000, D=c(0, 1))
+  x_beta2 <- ars(function(t) dbeta(t, 2, 2), n=10000, D=c(0, 1))
   output_beta2 <- ks.test(x_beta2, pbeta, 2, 2)
   expect_lt(significance, output_beta2$p.value)
 })
 
 test_that("Sampling Gamma(2, 1) through ars() passes K-S test",{
+  set.seed(243)
   significance <- 0.05
   
-  x_gamma2 <- ars(function(t) dgamma(t, 2), n=50000, D=c(0, Inf))
+  x_gamma2 <- ars(function(t) dgamma(t, 2), n=10000, D=c(0, Inf))
   output_gamma2 <- ks.test(x_gamma2, pgamma, 2)
   expect_lt(significance, output_gamma2$p.value)
 })
 
 test_that("Sampling ChiSq(2) through ars() passes K-S test",{
+  set.seed(243)
   significance <- 0.05
   
-  x_chisq2 <- ars(function(t) dchisq(t, 2), n=50000, D=c(0, Inf))
+  x_chisq2 <- ars(function(t) dchisq(t, 2), n=10000, D=c(0, Inf))
   output_chisq2 <- ks.test(x_chisq2, pchisq, 2)
   expect_lt(significance, output_chisq2$p.value)
 })
 
 test_that("Sampling ChiSq(3) through ars() passes K-S test",{
+  set.seed(243)
   significance <- 0.05
   
-  x_chisq3 <- ars(function(t) dchisq(t, 3), n=50000, D=c(0, Inf))
+  x_chisq3 <- ars(function(t) dchisq(t, 3), n=10000, D=c(0, Inf))
   output_chisq3 <- ks.test(x_chisq3, pchisq, 3)
   expect_lt(significance, output_chisq3$p.value)
 })
 
 test_that("Sampling Exp(1) through ars() passes K-S test",{
+  set.seed(243)
   significance <- 0.05
   
   x_exp <- ars(dexp, n=10000, D=c(0, Inf))
@@ -127,6 +134,7 @@ test_that("Sampling Exp(1) through ars() passes K-S test",{
 })
 
 test_that("Sampling Unif(0,1) through ars() passes K-S test",{
+  set.seed(243)
   significance <- 0.05
   
   x_unif <- ars(dunif, n=10000, D=c(0, 1))
