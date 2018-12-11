@@ -1,14 +1,14 @@
 context("Tests for ars package")
 
-test_that("get_z provides intersection of tangent lines for h[j] and h[j+1]", {
+test_that("elements of the get_z_all result are within elements of x appropriately", {
   j <- 1
   x <- c(seq(-10,10,0.01))
   h <- function(t) { dnorm(t) }
   
-  z_result <- get_z(j,x,h, eps=1e-08)
+  z_result <- get_z_all(x, h)
   
-  expect_gt(z_result, x[1])
-  expect_lt(z_result,x[length(x)])
+  expect_true(all(z_result > x[1:(length(x)-1)]))
+  expect_true(all(z_result < x[2:length(x)]))
 })
 
 test_that("get_l_integral() returns appropriate lower-bound integral", {
@@ -81,14 +81,6 @@ test_that("Sampling Beta(2,2) through ars() passes K-S test",{
   expect_lt(significance, output_beta2$p.value)
 })
 
-test_that("Sampling Gamma(1, 1) through ars() passes K-S test",{
-  significance <- 0.05
-  
-  x_gamma <- ars(function(t) dgamma(t, 1), n=10000, D=c(0, Inf))
-  output_gamma <- ks.test(x_gamma, pgamma, 1)
-  expect_lt(significance, output_gamma$p.value)
-})
-
 test_that("Sampling Gamma(2, 1) through ars() passes K-S test",{
   significance <- 0.05
   
@@ -141,10 +133,9 @@ test_that("Sampling Gamma(0.5, 1) throws an error, since it is not log-concave",
   expect_error(ars(f, 10))
 })
 
-
 test_that("is_linear() returns correct value for the function",{
   h <- function(x) 3.1*x + 2.2
   g <- function(x) 0.1*x^2 + 4.4
-  expect_true(is_linear(h, D=c(-Inf,Inf)) == TRUE)
-  expect_true(is_linear(g, D=c(-Inf,Inf)) == FALSE)
+  expect_true(is_linear(h, D=c(-Inf,Inf)))
+  expect_true(is_linear(g, D=c(-Inf,Inf)))
 })

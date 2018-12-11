@@ -106,13 +106,13 @@ We wrote tests for several of the modular components of our ars() implementation
 
 To ensure the validity of samples generated from the ars() function, we ran a series of Kolmogorov-Smirnov tests which test for the closeness between an empirical CDF and a given distribution function in a nonparametric manner. We used the Kolmogorov-Smirnov test to test whether our ars() function returned a sample whose empirical CDF was close to the true CDF for a number of common log-concave distributions.
 
-We ran the Kolmogorov-Smirnov test for the following distributions: Normal(0,1), Exponential(1), Beta(1,1), Beta(2,2), Gamma(1,1), Gamma(2,1), $\chi^2_2$, $\chi^2_3$, and Uniform(0,1), each at a significance level of 0.05. For each test, we made sure that the p-value was greater than the significance level, suggesting that the null hypothesis, which is that the sample is drawn from the reference distribution, was true. For all tests, the p-values were greater than the default significance level. 
+We ran the Kolmogorov-Smirnov test for the following distributions: Normal(0,1), Exponential(1), Beta(1,1), Beta(2,2), Gamma(2,1), $\chi^2_2$, $\chi^2_3$, and Uniform(0,1), each at a significance level of 0.05. For each test, we made sure that the p-value was greater than the significance level, suggesting that the null hypothesis, which is that the sample is drawn from the reference distribution, was true. For all tests, the p-values were greater than the default significance level. 
 
 ## Team Member Contributions
 
 Vaibhav coded functions to build U and L using the formulae provided in Gilks, calculate the integral under S using analytical solutions, and sample from S by building the inverse CDF of S and solving analytically. He also helped put together the main ars() function along with his teammates and especially helped with speeding up the function by enabling the sampling of points in batches. Vaibhav wrote several tests, primarily to test that the creation of the upper bound was being conducted correctly.
 
-Colin
+Colin coded the functions to 
 
 Brandon coded functions to calculate z (as provided by Gilks et al) and to check for density log concavity. Coding of these log concavity checks was completed in parallel with Vaibhav. Brandon also included assertions and relevant tests for the above functions to check user input and function outputs. 
 
